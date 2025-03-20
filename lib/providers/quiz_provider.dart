@@ -15,10 +15,14 @@ class QuizProvider with ChangeNotifier {
   bool get isLoading => _isLoading;
   
   Future<void> loadQuizzes() async {
+    if (_isLoading) return; // Prevent multiple simultaneous loads
+    
     _isLoading = true;
     notifyListeners();
     
     try {
+      await Future.delayed(const Duration(milliseconds: 100)); // Small delay to ensure UI updates
+      
       // Load quiz data
       _quizzes = _getQuizData();
       
@@ -50,10 +54,10 @@ class QuizProvider with ChangeNotifier {
       }
     } catch (e) {
       debugPrint('Error loading quizzes: $e');
+    } finally {
+      _isLoading = false;
+      notifyListeners();
     }
-    
-    _isLoading = false;
-    notifyListeners();
   }
   
   Future<void> saveQuizProgress(Quiz quiz) async {
@@ -257,6 +261,82 @@ class QuizProvider with ChangeNotifier {
             question: 'Match the Kannada number ೮ with its value',
             kannada: '೮',
             options: ['6', '7', '8', '9'],
+            correctAnswerIndex: 2,
+          ),
+        ],
+      ),
+      // New quiz for advanced learners
+      Quiz(
+        id: 'sentence_structure',
+        title: 'Sentence Structure Quiz',
+        description: 'Test your knowledge of Kannada sentence formation',
+        questions: [
+          QuizQuestion(
+            question: 'How would you say "My name is..." in Kannada?',
+            kannada: 'ನನ್ನ ಹೆಸರು...',
+            options: ['ನನ್ನ ಹೆಸರು', 'ನಿಮ್ಮ ಹೆಸರು', 'ಅವರ ಹೆಸರು', 'ಯಾರ ಹೆಸರು'],
+            correctAnswerIndex: 0,
+          ),
+          QuizQuestion(
+            question: 'Which is the correct way to say "I am hungry" in Kannada?',
+            kannada: 'ನನಗೆ ಹಸಿವಾಗಿದೆ',
+            options: ['ನನಗೆ ಹಸಿವಾಗಿದೆ', 'ನನ್ನ ಹಸಿವು', 'ನಾನು ಹಸಿವು', 'ಹಸಿವು ನನಗೆ'],
+            correctAnswerIndex: 0,
+          ),
+          QuizQuestion(
+            question: 'What does "ನಾನು ಕನ್ನಡ ಕಲಿಯುತ್ತಿದ್ದೇನೆ" mean?',
+            kannada: 'ನಾನು ಕನ್ನಡ ಕಲಿಯುತ್ತಿದ್ದೇನೆ',
+            options: ['I know Kannada', 'I am learning Kannada', 'I speak Kannada', 'I love Kannada'],
+            correctAnswerIndex: 1,
+          ),
+          QuizQuestion(
+            question: 'How would you ask "Where is the market?" in Kannada?',
+            kannada: 'ಮಾರುಕಟ್ಟೆ ಎಲ್ಲಿದೆ?',
+            options: ['ಮಾರುಕಟ್ಟೆ ಯಾವುದು?', 'ಮಾರುಕಟ್ಟೆ ಎಲ್ಲಿದೆ?', 'ಮಾರುಕಟ್ಟೆ ಹೇಗಿದೆ?', 'ಮಾರುಕಟ್ಟೆ ಎಷ್ಟು?'],
+            correctAnswerIndex: 1,
+          ),
+          QuizQuestion(
+            question: 'Translate: "Thank you very much"',
+            kannada: 'ತುಂಬಾ ಧನ್ಯವಾದಗಳು',
+            options: ['ಧನ್ಯವಾದಗಳು', 'ತುಂಬಾ ಧನ್ಯವಾದಗಳು', 'ಬಹಳ ಧನ್ಯವಾದ', 'ಧನ್ಯವಾದ ತುಂಬಾ'],
+            correctAnswerIndex: 1,
+          ),
+        ],
+      ),
+      // New quiz for cultural knowledge
+      Quiz(
+        id: 'cultural_knowledge',
+        title: 'Kannada Culture Quiz',
+        description: 'Test your knowledge of Kannada culture and traditions',
+        questions: [
+          QuizQuestion(
+            question: 'What is the traditional New Year festival of Karnataka called?',
+            kannada: 'ಯುಗಾದಿ',
+            options: ['ದೀಪಾವಳಿ', 'ಯುಗಾದಿ', 'ಹೋಳಿ', 'ದಸರಾ'],
+            correctAnswerIndex: 1,
+          ),
+          QuizQuestion(
+            question: 'Which is the state flower of Karnataka?',
+            kannada: 'ಕಮಲ',
+            options: ['ಸೂರ್ಯಕಾಂತಿ', 'ಗುಲಾಬಿ', 'ಕಮಲ', 'ಪಾರಿಜಾತ'],
+            correctAnswerIndex: 2,
+          ),
+          QuizQuestion(
+            question: 'What do you say before starting a meal in Kannada?',
+            kannada: 'ಊಟ ಮಾಡಿ',
+            options: ['ಊಟ ಮಾಡಿ', 'ಧನ್ಯವಾದ', 'ನಮಸ್ಕಾರ', 'ಶುಭ ದಿನ'],
+            correctAnswerIndex: 0,
+          ),
+          QuizQuestion(
+            question: 'Which of these is a traditional Kannada sweet?',
+            kannada: 'ಮೈಸೂರು ಪಾಕ್',
+            options: ['ಬಿರಿಯಾನಿ', 'ಮೈಸೂರು ಪಾಕ್', 'ಚಪಾತಿ', 'ಪನೀರ್'],
+            correctAnswerIndex: 1,
+          ),
+          QuizQuestion(
+            question: 'What is the main language of Karnataka?',
+            kannada: 'ಕನ್ನಡ',
+            options: ['ತಮಿಳು', 'ತೆಲುಗು', 'ಕನ್ನಡ', 'ಮಲಯಾಳಂ'],
             correctAnswerIndex: 2,
           ),
         ],

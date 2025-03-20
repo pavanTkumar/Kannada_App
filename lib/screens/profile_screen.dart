@@ -2,6 +2,7 @@
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 import '../providers/user_provider.dart';
+import '../providers/auth_provider.dart';
 import '../constants/app_colors.dart';
 import '../models/achievement_model.dart';
 
@@ -10,6 +11,8 @@ class ProfileScreen extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final authProvider = Provider.of<AuthProvider>(context);
+    
     return Consumer<UserProvider>(
       builder: (context, userProvider, _) {
         final user = userProvider.preferences;
@@ -54,6 +57,18 @@ class ProfileScreen extends StatelessWidget {
                             fontWeight: FontWeight.bold,
                           ),
                         ),
+                        // Display email if user is logged in with an account
+                        if (authProvider.user != null && !authProvider.user!.isAnonymous && authProvider.user!.email != null)
+                          Padding(
+                            padding: const EdgeInsets.only(top: 4),
+                            child: Text(
+                              authProvider.user!.email!,
+                              style: TextStyle(
+                                fontSize: 14,
+                                color: Colors.grey[600],
+                              ),
+                            ),
+                          ),
                         const SizedBox(height: 8),
                         Row(
                           mainAxisAlignment: MainAxisAlignment.center,
@@ -170,7 +185,112 @@ class ProfileScreen extends StatelessWidget {
                   ),
                   
                   const SizedBox(height: 24),
-                  
+                  // Add to your profile_screen.dart, right before the last Card (App Information)
+const SizedBox(height: 24),
+
+// Account Actions Card
+Card(
+  child: Padding(
+    padding: const EdgeInsets.all(16.0),
+    child: Column(
+      crossAxisAlignment: CrossAxisAlignment.start,
+      children: [
+        const Text(
+          'Account Actions',
+          style: TextStyle(
+            fontSize: 18,
+            fontWeight: FontWeight.bold,
+          ),
+        ),
+        const SizedBox(height: 16),
+        ElevatedButton.icon(
+          onPressed: () {
+            // Show reset confirmation dialog
+            showDialog(
+              context: context,
+              builder: (context) => AlertDialog(
+                title: const Text('Reset Progress'),
+                content: const Text('Are you sure you want to reset all your learning progress? This action cannot be undone.'),
+                actions: [
+                  TextButton(
+                    onPressed: () => Navigator.pop(context),
+                    child: const Text('Cancel'),
+                  ),
+                  TextButton(
+                    onPressed: () {
+                      // Reset progress logic here
+                      Navigator.pop(context);
+                    },
+                    child: const Text('Reset'),
+                  ),
+                ],
+              ),
+            );
+          },
+          icon: const Icon(Icons.restart_alt),
+          label: const Text('Reset Progress'),
+          style: ElevatedButton.styleFrom(
+            backgroundColor: Colors.amber[100],
+            foregroundColor: Colors.amber[900],
+            minimumSize: const Size(double.infinity, 48),
+          ),
+        ),
+        const SizedBox(height: 12),
+        ElevatedButton.icon(
+          onPressed: () async {
+            await Provider.of<AuthProvider>(context, listen: false).signOut();
+            if (context.mounted) {
+              Navigator.pushNamedAndRemoveUntil(context, '/login', (route) => false);
+            }
+          },
+          icon: const Icon(Icons.logout),
+          label: const Text('Sign Out'),
+          style: ElevatedButton.styleFrom(
+            backgroundColor: Colors.blue[100],
+            foregroundColor: Colors.blue[900],
+            minimumSize: const Size(double.infinity, 48),
+          ),
+        ),
+        const SizedBox(height: 12),
+        ElevatedButton.icon(
+          onPressed: () {
+            // Show delete account confirmation dialog
+            showDialog(
+              context: context,
+              builder: (context) => AlertDialog(
+                title: const Text('Delete Account'),
+                content: const Text('Are you sure you want to delete your account? All your data will be permanently lost. This action cannot be undone.'),
+                actions: [
+                  TextButton(
+                    onPressed: () => Navigator.pop(context),
+                    child: const Text('Cancel'),
+                  ),
+                  TextButton(
+                    onPressed: () {
+                      // Delete account logic here
+                      Navigator.pop(context);
+                    },
+                    style: TextButton.styleFrom(
+                      foregroundColor: Colors.red,
+                    ),
+                    child: const Text('Delete'),
+                  ),
+                ],
+              ),
+            );
+          },
+          icon: const Icon(Icons.delete_forever),
+          label: const Text('Delete Account'),
+          style: ElevatedButton.styleFrom(
+            backgroundColor: Colors.red[100],
+            foregroundColor: Colors.red[900],
+            minimumSize: const Size(double.infinity, 48),
+          ),
+        ),
+      ],
+    ),
+  ),
+),
                   // App Information Card
                   Card(
                     child: Padding(
@@ -195,6 +315,30 @@ class ProfileScreen extends StatelessWidget {
                       ),
                     ),
                   ),
+                  
+                  // Sign Out Button
+                  if (authProvider.user != null) 
+                    Padding(
+                      padding: const EdgeInsets.symmetric(vertical: 24.0),
+                      child: SizedBox(
+                        width: double.infinity,
+                        child: ElevatedButton.icon(
+                          onPressed: () async {
+                            await authProvider.signOut();
+                            if (context.mounted) {
+                              // Navigate back to login screen
+                              Navigator.of(context).pushNamedAndRemoveUntil('/login', (route) => false);
+                            }
+                          },
+                          style: ElevatedButton.styleFrom(
+                            backgroundColor: Colors.red[50],
+                            foregroundColor: Colors.red[800],
+                          ),
+                          icon: const Icon(Icons.logout),
+                          label: const Text('Sign Out'),
+                        ),
+                      ),
+                    ),
                 ],
               ),
             ),
@@ -216,7 +360,7 @@ class ProfileScreen extends StatelessWidget {
           Container(
             padding: const EdgeInsets.all(8),
             decoration: BoxDecoration(
-              color: AppColors.primary.withOpacity(0.1),
+              color: AppColors.primary.withAlpha(26),
               borderRadius: BorderRadius.circular(8),
             ),
             child: Icon(

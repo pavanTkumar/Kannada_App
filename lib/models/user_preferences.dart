@@ -10,6 +10,10 @@ class UserPreferences {
   final int totalFlashcardsLearned;
   final int streakDays;
   final DateTime lastActiveDate;
+  final String learningGoal;
+  final int dailyGoalMinutes;
+  final bool notificationsEnabled;
+  final Map<String, dynamic> completedLessons;
 
   UserPreferences({
     required this.name,
@@ -20,6 +24,10 @@ class UserPreferences {
     this.totalFlashcardsLearned = 0,
     this.streakDays = 0,
     DateTime? lastActiveDate,
+    this.learningGoal = 'Learn basics',
+    this.dailyGoalMinutes = 10,
+    this.notificationsEnabled = true,
+    this.completedLessons = const {},
   }) : lastActiveDate = lastActiveDate ?? DateTime.now();
 
   UserPreferences copyWith({
@@ -31,6 +39,10 @@ class UserPreferences {
     int? totalFlashcardsLearned,
     int? streakDays,
     DateTime? lastActiveDate,
+    String? learningGoal,
+    int? dailyGoalMinutes,
+    bool? notificationsEnabled,
+    Map<String, dynamic>? completedLessons,
   }) {
     return UserPreferences(
       name: name ?? this.name,
@@ -41,6 +53,10 @@ class UserPreferences {
       totalFlashcardsLearned: totalFlashcardsLearned ?? this.totalFlashcardsLearned,
       streakDays: streakDays ?? this.streakDays,
       lastActiveDate: lastActiveDate ?? this.lastActiveDate,
+      learningGoal: learningGoal ?? this.learningGoal,
+      dailyGoalMinutes: dailyGoalMinutes ?? this.dailyGoalMinutes,
+      notificationsEnabled: notificationsEnabled ?? this.notificationsEnabled,
+      completedLessons: completedLessons ?? this.completedLessons,
     );
   }
 
@@ -54,6 +70,10 @@ class UserPreferences {
       'totalFlashcardsLearned': totalFlashcardsLearned,
       'streakDays': streakDays,
       'lastActiveDate': lastActiveDate.toIso8601String(),
+      'learningGoal': learningGoal,
+      'dailyGoalMinutes': dailyGoalMinutes,
+      'notificationsEnabled': notificationsEnabled,
+      'completedLessons': completedLessons,
     };
   }
 
@@ -75,6 +95,10 @@ class UserPreferences {
       lastActiveDate: json['lastActiveDate'] != null
           ? DateTime.parse(json['lastActiveDate'])
           : DateTime.now(),
+      learningGoal: json['learningGoal'] as String? ?? 'Learn basics',
+      dailyGoalMinutes: json['dailyGoalMinutes'] as int? ?? 10,
+      notificationsEnabled: json['notificationsEnabled'] as bool? ?? true,
+      completedLessons: json['completedLessons'] as Map<String, dynamic>? ?? {},
     );
   }
 }

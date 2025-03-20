@@ -11,11 +11,15 @@ class LessonProvider with ChangeNotifier {
   final DictionaryService _dictionaryService = DictionaryService();
   Map<String, Lesson> _lessons = {};
   bool _isLoading = false;
+  bool _isInitialized = false;
 
   bool get isLoading => _isLoading;
+  bool get isInitialized => _isInitialized;
   Map<String, Lesson> get lessons => _lessons;
 
   Future<void> initializeLessons() async {
+    if (_isInitialized || _isLoading) return;
+    
     _isLoading = true;
     notifyListeners();
 
@@ -85,13 +89,80 @@ class LessonProvider with ChangeNotifier {
               .toList(),
           progress: progress['food'] ?? 0.0,
         ),
+        // Adding two new lessons - Fixed type error with proper casting
+        'travel': Lesson(
+          id: 'travel',
+          title: 'Travel Phrases',
+          kannadaTitle: 'ಪ್ರಯಾಣದ ವಾಕ್ಯಗಳು',
+          description: 'Essential phrases for traveling in Karnataka',
+          flashcards: (lessonData['travel'] ?? [
+            {'kannada': 'ಬಸ್ ನಿಲ್ದಾಣ ಎಲ್ಲಿದೆ?', 'english': 'Where is the bus station?'},
+            {'kannada': 'ರೈಲು ನಿಲ್ದಾಣಕ್ಕೆ ಹೋಗುವ ದಾರಿ', 'english': 'Way to the railway station'},
+            {'kannada': 'ಎಷ್ಟು ದೂರ?', 'english': 'How far is it?'},
+            {'kannada': 'ಟಿಕೆಟ್ ಎಷ್ಟು?', 'english': 'How much is the ticket?'},
+            {'kannada': 'ಮುಂದಿನ ಬಸ್ ಯಾವಾಗ?', 'english': 'When is the next bus?'},
+            {'kannada': 'ಹೋಟೆಲ್ ನಿಲ್ದಾಣ', 'english': 'Hotel accommodation'},
+            {'kannada': 'ಇದು ಎಷ್ಟು?', 'english': 'How much is this?'},
+            {'kannada': 'ನನಗೆ ಸಹಾಯ ಮಾಡುವಿರಾ?', 'english': 'Can you help me?'},
+            {'kannada': 'ಇದು ಎಲ್ಲಿದೆ?', 'english': 'Where is this place?'},
+            {'kannada': 'ತುರ್ತು ಸಹಾಯ', 'english': 'Emergency help'},
+          ])
+              .map<Flashcard>((data) => Flashcard.fromMap(data as Map<String, dynamic>))
+              .toList(),
+          progress: progress['travel'] ?? 0.0,
+        ),
+        'shopping': Lesson(
+          id: 'shopping',
+          title: 'Shopping Terms',
+          kannadaTitle: 'ಶಾಪಿಂಗ್ ಪದಗಳು',
+          description: 'Learn useful words for shopping in Kannada',
+          flashcards: (lessonData['shopping'] ?? [
+            {'kannada': 'ಬೆಲೆ', 'english': 'Price'},
+            {'kannada': 'ಅಂಗಡಿ', 'english': 'Shop'},
+            {'kannada': 'ಮಾರುಕಟ್ಟೆ', 'english': 'Market'},
+            {'kannada': 'ಹಣ', 'english': 'Money'},
+            {'kannada': 'ರಶೀದಿ', 'english': 'Receipt'},
+            {'kannada': 'ಕಡಿಮೆ ಬೆಲೆ', 'english': 'Discount'},
+            {'kannada': 'ದುಬಾರಿ', 'english': 'Expensive'},
+            {'kannada': 'ಅಗ್ಗ', 'english': 'Cheap'},
+            {'kannada': 'ನಾಣ್ಯಗಳು', 'english': 'Coins'},
+            {'kannada': 'ನೋಟುಗಳು', 'english': 'Notes/Bills'},
+          ])
+              .map<Flashcard>((data) => Flashcard.fromMap(data as Map<String, dynamic>))
+              .toList(),
+          progress: progress['shopping'] ?? 0.0,
+        ),
       };
+      
+      _isInitialized = true;
     } catch (e) {
       debugPrint('Error initializing lessons: $e');
+    } finally {
+      _isLoading = false;
+      notifyListeners();
     }
+  }
 
-    _isLoading = false;
-    notifyListeners();
+  Future<void> refreshProgress() async {
+    if (!_isInitialized) {
+      await initializeLessons();
+      return;
+    }
+    
+    try {
+      final progress = await _dictionaryService.getAllProgress();
+      
+      // Update progress for each lesson
+      for (final lessonId in _lessons.keys) {
+        if (progress.containsKey(lessonId)) {
+          _lessons[lessonId]!.progress = progress[lessonId]!;
+        }
+      }
+      
+      notifyListeners();
+    } catch (e) {
+      debugPrint('Error refreshing lesson progress: $e');
+    }
   }
 
   Future<void> markFlashcardAsLearned(String lessonId, int flashcardIndex) async {
@@ -105,8 +176,11 @@ class LessonProvider with ChangeNotifier {
       lesson.flashcards[flashcardIndex].isLearned = true;
       
       // Increment user's learned flashcards count
-      Provider.of<UserProvider>(navigatorKey.currentContext!, listen: false)
-          .updateFlashcardsLearned(1);
+      final context = navigatorKey.currentContext;
+      if (context != null) {
+        Provider.of<UserProvider>(context, listen: false)
+            .updateFlashcardsLearned(1);
+      }
     }
     
     lesson.progress = lesson.flashcards

@@ -15,6 +15,11 @@ dependencies:
   http: ^1.1.0
   intl: ^0.18.1
   flutter_staggered_animations: ^1.1.1
+  # Authentication packages
+  firebase_core: ^2.24.2
+  firebase_auth: ^4.15.3
+  google_sign_in: ^6.1.6
+  crypto: ^3.0.3
 
 dev_dependencies:
   flutter_test:

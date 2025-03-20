@@ -15,14 +15,29 @@ class TestScreen extends StatefulWidget {
 }
 
 class _TestScreenState extends State<TestScreen> {
-  bool _initialized = false;
+  bool _isLoading = true;
 
   @override
-  void didChangeDependencies() {
-    super.didChangeDependencies();
-    if (!_initialized) {
-      _initialized = true;
-      context.read<QuizProvider>().loadQuizzes();
+  void initState() {
+    super.initState();
+    // Moving provider call to initState with a post-frame callback
+    // This avoids the "setState during build" error
+    WidgetsBinding.instance.addPostFrameCallback((_) {
+      _loadQuizzes();
+    });
+  }
+
+  Future<void> _loadQuizzes() async {
+    setState(() {
+      _isLoading = true;
+    });
+    
+    await context.read<QuizProvider>().loadQuizzes();
+    
+    if (mounted) {
+      setState(() {
+        _isLoading = false;
+      });
     }
   }
 
@@ -30,10 +45,6 @@ class _TestScreenState extends State<TestScreen> {
   Widget build(BuildContext context) {
     return Consumer<QuizProvider>(
       builder: (context, quizProvider, child) {
-        if (quizProvider.isLoading) {
-          return const Center(child: CircularProgressIndicator());
-        }
-
         final quizzes = quizProvider.quizzes;
 
         return Scaffold(
@@ -66,20 +77,56 @@ class _TestScreenState extends State<TestScreen> {
                   ),
                 ),
                 Expanded(
-                  child: ListView.builder(
-                    padding: const EdgeInsets.all(16.0),
-                    itemCount: quizzes.length,
-                    itemBuilder: (context, index) {
-                      final quiz = quizzes[index];
-                      return _buildQuizCard(context, quiz);
-                    },
-                  ),
+                  child: _isLoading || quizProvider.isLoading
+                      ? const Center(child: CircularProgressIndicator())
+                      : quizzes.isEmpty
+                          ? _buildEmptyState()
+                          : ListView.builder(
+                              padding: const EdgeInsets.all(16.0),
+                              itemCount: quizzes.length,
+                              itemBuilder: (context, index) {
+                                final quiz = quizzes[index];
+                                return _buildQuizCard(context, quiz);
+                              },
+                            ),
                 ),
               ],
             ),
           ),
         );
       },
+    );
+  }
+
+  Widget _buildEmptyState() {
+    return Center(
+      child: Column(
+        mainAxisAlignment: MainAxisAlignment.center,
+        children: [
+          Icon(
+            Icons.quiz_outlined,
+            size: 80,
+            color: Colors.grey[300],
+          ),
+          const SizedBox(height: 16),
+          Text(
+            'No quizzes available',
+            style: TextStyle(
+              fontSize: 18,
+              fontWeight: FontWeight.bold,
+              color: Colors.grey[600],
+            ),
+          ),
+          const SizedBox(height: 8),
+          Text(
+            'Check back later for new quizzes',
+            style: TextStyle(
+              fontSize: 16,
+              color: Colors.grey[600],
+            ),
+          ),
+        ],
+      ),
     );
   }
 
@@ -111,7 +158,12 @@ class _TestScreenState extends State<TestScreen> {
             MaterialPageRoute(
               builder: (context) => QuizScreen(quiz: quiz),
             ),
-          );
+          ).then((_) {
+            // Refresh the screen when returning from the quiz
+            if (mounted) {
+              setState(() {});
+            }
+          });
         },
         borderRadius: BorderRadius.circular(12),
         child: Padding(
@@ -183,10 +235,10 @@ class _TestScreenState extends State<TestScreen> {
                     ),
                   ),
                   const Spacer(),
-                  const Icon(
+                  Icon(
                     Icons.arrow_forward_ios,
                     size: 16,
-                    color: Colors.grey,
+                    color: Colors.grey[400],
                   ),
                 ],
               ),
