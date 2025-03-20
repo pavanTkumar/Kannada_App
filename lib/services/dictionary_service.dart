@@ -285,4 +285,7 @@ class DictionaryService {
         {'kannada': 'ಮಧ್ಯಾಹ್ನ', 'english': 'Afternoon'},
         {'kannada': 'ಸಂಜೆ', 'english': 'Evening'},
         {'kannada': 'ರಾತ್ರಿ', 'english': 'Night'},
-      ],
+      ]
+    };
+  }
+}

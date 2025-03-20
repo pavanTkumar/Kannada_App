@@ -1,118 +1,163 @@
 // lib/providers/auth_provider.dart
-import 'package:flutter/foundation.dart';
-import 'package:firebase_auth/firebase_auth.dart';
-import '../services/auth_service.dart';
+import 'package:flutter/material.dart';
+import 'package:shared_preferences/shared_preferences.dart';
 
 class AuthProvider with ChangeNotifier {
-  final AuthService _authService = AuthService();
-  User? _user;
+  bool _isAuthenticated = false;
   bool _isLoading = false;
-  String? _error;
-
-  AuthProvider() {
-    // Initialize the user
-    _user = _authService.currentUser;
-    
-    // Listen for auth state changes
-    _authService.authStateChanges.listen((User? user) {
-      _user = user;
-      notifyListeners();
-    });
-  }
-
-  // Getters
-  User? get user => _user;
+  String _userName = '';
+  String _error = '';
+  
+  bool get isAuthenticated => _isAuthenticated;
   bool get isLoading => _isLoading;
-  bool get isAuthenticated => _user != null;
-  String? get error => _error;
-
-  // Clear error
+  String get userName => _userName;
+  String get error => _error;
+  
+  // Clear any existing error
   void clearError() {
-    _error = null;
+    _error = '';
     notifyListeners();
   }
-
-  // Temporary method for development
-  void simulateLogin() {
-    _isLoading = false;
-    // Set authenticated without Firebase
-    notifyListeners();
-  }
-
+  
   // Sign in with Google
   Future<bool> signInWithGoogle() async {
-    _isLoading = true;
-    _error = null;
-    notifyListeners();
-
     try {
-      final result = await _authService.signInWithGoogle();
+      _isLoading = true;
+      _error = '';
+      notifyListeners();
+      
+      // Simulate Google sign-in process
+      await Future.delayed(const Duration(seconds: 1));
+      
+      // Mock successful sign-in
+      _isAuthenticated = true;
+      _userName = 'Google User';
+      
+      // Save to preferences
+      final prefs = await SharedPreferences.getInstance();
+      await prefs.setString('user_name', _userName);
+      await prefs.setBool('is_authenticated', true);
+      
       _isLoading = false;
-      if (result == null) {
-        _error = "Google Sign In failed";
-        notifyListeners();
-        return false;
-      }
-      
-      // For development only
-      simulateLogin();
-      
       notifyListeners();
       return true;
     } catch (e) {
       _isLoading = false;
-      _error = e.toString();
-      debugPrint('Error in signInWithGoogle: $e');
+      _error = 'Failed to sign in with Google: ${e.toString()}';
       notifyListeners();
       return false;
     }
   }
-
-  // Sign in as guest
+  
+  // Sign in anonymously (guest)
   Future<bool> signInAnonymously() async {
-    _isLoading = true;
-    _error = null;
-    notifyListeners();
-
     try {
-      // For development to bypass Firebase authentication issues
-      simulateLogin();
-      return true;
+      _isLoading = true;
+      _error = '';
+      notifyListeners();
       
-      // Uncomment this when Firebase auth is working
-      /*
-      final result = await _authService.signInAnonymously();
+      // Simulate anonymous sign-in process
+      await Future.delayed(const Duration(milliseconds: 500));
+      
+      // Mock successful sign-in
+      _isAuthenticated = true;
+      _userName = 'Guest User';
+      
+      // Save to preferences
+      final prefs = await SharedPreferences.getInstance();
+      await prefs.setString('user_name', _userName);
+      await prefs.setBool('is_authenticated', true);
+      
       _isLoading = false;
-      if (result == null) {
-        _error = "Anonymous Sign In failed";
-        notifyListeners();
-        return false;
-      }
       notifyListeners();
       return true;
-      */
     } catch (e) {
       _isLoading = false;
-      _error = e.toString();
-      debugPrint('Error in signInAnonymously: $e');
+      _error = 'Failed to sign in as guest: ${e.toString()}';
       notifyListeners();
       return false;
     }
   }
-
+  
+  // Simple guest login with name
+  Future<bool> loginAsGuest(String name) async {
+    try {
+      _isLoading = true;
+      _error = '';
+      notifyListeners();
+      
+      // Validate name
+      if (name.trim().isEmpty) {
+        _error = 'Please enter your name';
+        _isLoading = false;
+        notifyListeners();
+        return false;
+      }
+      
+      // Simulate network delay
+      await Future.delayed(const Duration(milliseconds: 500));
+      
+      // Save user name in shared preferences
+      final prefs = await SharedPreferences.getInstance();
+      await prefs.setString('user_name', name);
+      await prefs.setBool('is_authenticated', true);
+      
+      _userName = name;
+      _isAuthenticated = true;
+      
+      _isLoading = false;
+      notifyListeners();
+      return true;
+    } catch (e) {
+      _isLoading = false;
+      _error = 'Login failed: ${e.toString()}';
+      notifyListeners();
+      return false;
+    }
+  }
+  
+  // Check if user is already logged in
+  Future<bool> checkAuthStatus() async {
+    try {
+      final prefs = await SharedPreferences.getInstance();
+      final storedName = prefs.getString('user_name');
+      final isAuth = prefs.getBool('is_authenticated') ?? false;
+      
+      if (storedName != null && storedName.isNotEmpty && isAuth) {
+        _userName = storedName;
+        _isAuthenticated = true;
+        notifyListeners();
+        return true;
+      }
+      
+      return false;
+    } catch (e) {
+      _error = e.toString();
+      notifyListeners();
+      return false;
+    }
+  }
+  
   // Sign out
   Future<void> signOut() async {
-    _isLoading = true;
-    _error = null;
-    notifyListeners();
-
     try {
-      await _authService.signOut();
-    } catch (e) {
-      _error = e.toString();
-      debugPrint('Error in signOut: $e');
-    } finally {
+      _isLoading = true;
+      _error = '';
+      notifyListeners();
+      
+      // Clear saved data
+      final prefs = await SharedPreferences.getInstance();
+      await prefs.remove('user_name');
+      await prefs.remove('is_authenticated');
+      
+      _isAuthenticated = false;
+      _userName = '';
+      
       _isLoading = false;
+      notifyListeners();
+    } catch (e) {
+      _isLoading = false;
+      _error = 'Sign out failed: ${e.toString()}';
       notifyListeners();
     }
   }

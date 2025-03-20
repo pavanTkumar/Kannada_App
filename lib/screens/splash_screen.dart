@@ -3,8 +3,10 @@ import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 import '../constants/app_colors.dart';
 import '../providers/user_provider.dart';
+import '../providers/auth_provider.dart';
 import '../providers/lesson_provider.dart';
 import 'main_screen.dart';
+import 'login_screen.dart';
 import 'setup_screen.dart';
 import 'dart:math' as math;
 
@@ -84,6 +86,10 @@ class _SplashScreenState extends State<SplashScreen> with SingleTickerProviderSt
     // Initialize app data
     await Provider.of<LessonProvider>(context, listen: false).initializeLessons();
     
+    // Check authentication status
+    final authProvider = Provider.of<AuthProvider>(context, listen: false);
+    final isAuthenticated = await authProvider.checkAuthStatus();
+    
     // Simulate minimum splash screen display time
     await Future.delayed(const Duration(seconds: 1));
     
@@ -92,14 +98,15 @@ class _SplashScreenState extends State<SplashScreen> with SingleTickerProviderSt
         _isLoading = false;
       });
       
-      _navigateToNext();
+      _navigateToNext(isAuthenticated);
     }
   }
 
-  void _navigateToNext() {
+  void _navigateToNext(bool isAuthenticated) {
     final userProvider = Provider.of<UserProvider>(context, listen: false);
     
-    if (userProvider.isInitialized) {
+    if (isAuthenticated) {
+      // User is authenticated, go to main screen
       Navigator.of(context).pushReplacement(
         PageRouteBuilder(
           pageBuilder: (context, animation, secondaryAnimation) => 
@@ -123,7 +130,23 @@ class _SplashScreenState extends State<SplashScreen> with SingleTickerProviderSt
           transitionDuration: const Duration(milliseconds: 800),
         ),
       );
+    } else if (userProvider.isInitialized) {
+      // User setup is done but not authenticated, go to login
+      Navigator.of(context).pushReplacement(
+        PageRouteBuilder(
+          pageBuilder: (context, animation, secondaryAnimation) => 
+            const LoginScreen(),
+          transitionsBuilder: (context, animation, secondaryAnimation, child) {
+            return FadeTransition(
+              opacity: animation,
+              child: child,
+            );
+          },
+          transitionDuration: const Duration(milliseconds: 500),
+        ),
+      );
     } else {
+      // First time user, go to setup
       Navigator.of(context).pushReplacement(
         PageRouteBuilder(
           pageBuilder: (context, animation, secondaryAnimation) => 
@@ -148,8 +171,6 @@ class _SplashScreenState extends State<SplashScreen> with SingleTickerProviderSt
 
   @override
   Widget build(BuildContext context) {
-    final size = MediaQuery.of(context).size;
-    
     return Scaffold(
       backgroundColor: AppColors.primary,
       body: SafeArea(
