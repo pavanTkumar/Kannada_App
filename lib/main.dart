@@ -6,6 +6,8 @@ import 'screens/setup_screen.dart';
 import 'constants/app_colors.dart';
 import 'providers/lesson_provider.dart';
 import 'providers/user_provider.dart';
+import 'providers/quiz_provider.dart';
+import 'utils/navigator_key.dart';
 
 void main() async {
   WidgetsFlutterBinding.ensureInitialized();
@@ -18,6 +20,7 @@ void main() async {
       providers: [
         ChangeNotifierProvider.value(value: userProvider),
         ChangeNotifierProvider(create: (_) => LessonProvider()),
+        ChangeNotifierProvider(create: (_) => QuizProvider()),
       ],
       child: const MyApp(),
     ),
@@ -32,6 +35,7 @@ class MyApp extends StatelessWidget {
     return Consumer<UserProvider>(
       builder: (context, userProvider, child) {
         return MaterialApp(
+          navigatorKey: navigatorKey,
           title: 'Learn Kannada',
           debugShowCheckedModeBanner: false,
           themeMode: userProvider.preferences?.isDarkMode ?? false 

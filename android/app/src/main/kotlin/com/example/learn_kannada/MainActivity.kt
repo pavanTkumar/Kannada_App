@@ -1,4 +1,4 @@
-package com.example.learn_kannada
+package com.suviko.learn_kannada
 
 import io.flutter.embedding.android.FlutterActivity
 

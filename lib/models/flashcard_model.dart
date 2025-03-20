@@ -31,6 +31,7 @@ class Lesson {
   final String id;
   final String title;
   final String kannadaTitle;
+  final String description;
   final List<Flashcard> flashcards;
   double progress;
 
@@ -38,6 +39,7 @@ class Lesson {
     required this.id,
     required this.title,
     required this.kannadaTitle,
+    this.description = '',
     required this.flashcards,
     this.progress = 0.0,
   });
