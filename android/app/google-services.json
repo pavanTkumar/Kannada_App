@@ -1,0 +1,55 @@
+{
+  "project_info": {
+    "project_number": "343909341018",
+    "project_id": "learnkannada-96291",
+    "storage_bucket": "learnkannada-96291.firebasestorage.app"
+  },
+  "client": [
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:343909341018:android:98c19d5f484d13d6c18563",
+        "android_client_info": {
+          "package_name": "com.suviko.learn_kannada"
+        }
+      },
+      "oauth_client": [
+        {
+          "client_id": "343909341018-cultmvdll7ut6u06babmk20st1n5fk4i.apps.googleusercontent.com",
+          "client_type": 1,
+          "android_info": {
+            "package_name": "com.suviko.learn_kannada",
+            "certificate_hash": "7709701a9e7d194bb347ec870cfd56ea96498966"
+          }
+        },
+        {
+          "client_id": "343909341018-g9sbqfo73tk4stn3i6ipvde0hcfd9o17.apps.googleusercontent.com",
+          "client_type": 1,
+          "android_info": {
+            "package_name": "com.suviko.learn_kannada",
+            "certificate_hash": "34a735df4e8fde14451f70f6dc1ade964d2f759d"
+          }
+        },
+        {
+          "client_id": "343909341018-41voc0p1927vrd4mvmea8lk8o26mj12s.apps.googleusercontent.com",
+          "client_type": 3
+        }
+      ],
+      "api_key": [
+        {
+          "current_key": "AIzaSyDkYgBhH7aECk-fLLrKeJtyXTJ9fJb7ruc"
+        }
+      ],
+      "services": {
+        "appinvite_service": {
+          "other_platform_oauth_client": [
+            {
+              "client_id": "343909341018-41voc0p1927vrd4mvmea8lk8o26mj12s.apps.googleusercontent.com",
+              "client_type": 3
+            }
+          ]
+        }
+      }
+    }
+  ],
+  "configuration_version": "1"
+}
