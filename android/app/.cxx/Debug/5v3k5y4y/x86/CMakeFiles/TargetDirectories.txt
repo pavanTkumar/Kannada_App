@@ -1,0 +1,2 @@
+/Users/geekysmac/Desktop/My_Projects/Subodh/Kannada_App/learn_kannada/android/app/.cxx/Debug/5v3k5y4y/x86/CMakeFiles/edit_cache.dir
+/Users/geekysmac/Desktop/My_Projects/Subodh/Kannada_App/learn_kannada/android/app/.cxx/Debug/5v3k5y4y/x86/CMakeFiles/rebuild_cache.dir
