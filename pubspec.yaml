@@ -1,7 +1,7 @@
 name: learn_kannada
 description: Learn Kannada language using flashcards with an intuitive and interactive approach.
 publish_to: 'none'
-version: 1.0.0+3
+version: 1.0.0+4
 
 environment:
   sdk: '>=2.19.0 <4.0.0'

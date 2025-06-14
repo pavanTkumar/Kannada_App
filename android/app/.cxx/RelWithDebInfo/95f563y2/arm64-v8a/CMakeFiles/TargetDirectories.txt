@@ -1,0 +1,2 @@
+/Users/geekysmac/Desktop/My_Projects/Subodh/Kan_App/Kannada_App/android/app/.cxx/RelWithDebInfo/95f563y2/arm64-v8a/CMakeFiles/edit_cache.dir
+/Users/geekysmac/Desktop/My_Projects/Subodh/Kan_App/Kannada_App/android/app/.cxx/RelWithDebInfo/95f563y2/arm64-v8a/CMakeFiles/rebuild_cache.dir

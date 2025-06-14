@@ -94,21 +94,30 @@ class LessonProvider with ChangeNotifier {
     notifyListeners();
   }
 
-  Future<void> markFlashcardAsLearned(String lessonId, int flashcardIndex) async {
+  Future<void> markFlashcardAsLearned(String lessonId, int flashcardIndex, [bool markAsLearned = true]) async {
     if (!_lessons.containsKey(lessonId)) return;
 
     final lesson = _lessons[lessonId]!;
     if (flashcardIndex >= lesson.flashcards.length) return;
 
-    // Check if already learned
-    if (!lesson.flashcards[flashcardIndex].isLearned) {
-      lesson.flashcards[flashcardIndex].isLearned = true;
-      
+    // Update flashcard learned status
+    final wasLearned = lesson.flashcards[flashcardIndex].isLearned;
+    lesson.flashcards[flashcardIndex].isLearned = markAsLearned;
+    
+    // If the status changed from not learned to learned, increment count
+    if (!wasLearned && markAsLearned) {
       // Increment user's learned flashcards count
       Provider.of<UserProvider>(navigatorKey.currentContext!, listen: false)
           .updateFlashcardsLearned(1);
+    } 
+    // If the status changed from learned to not learned, decrement count
+    else if (wasLearned && !markAsLearned) {
+      // Decrement user's learned flashcards count (but don't go below zero)
+      Provider.of<UserProvider>(navigatorKey.currentContext!, listen: false)
+          .updateFlashcardsLearned(-1);
     }
     
+    // Update lesson progress
     lesson.progress = lesson.flashcards
             .where((flashcard) => flashcard.isLearned)
             .length /
@@ -117,6 +126,10 @@ class LessonProvider with ChangeNotifier {
 
     await _dictionaryService.saveProgress(lessonId, lesson.progress);
     notifyListeners();
+  }
+  
+  Future<void> toggleFlashcardLearned(String lessonId, int flashcardIndex, bool isLearned) async {
+    return markFlashcardAsLearned(lessonId, flashcardIndex, isLearned);
   }
   
   // Get all learned flashcards count

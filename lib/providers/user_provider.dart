@@ -62,6 +62,9 @@ class UserProvider with ChangeNotifier {
       final updatedScores = Map<String, double>.from(_preferences!.quizScores);
       updatedScores[quizId] = score;
       await savePreferences(_preferences!.copyWith(quizScores: updatedScores));
+      
+      // Check for achievements after updating score
+      checkForAchievements();
     }
   }
 
@@ -80,8 +83,12 @@ class UserProvider with ChangeNotifier {
 
   Future<void> updateFlashcardsLearned(int count) async {
     if (_preferences != null) {
+      // Don't allow total to go below zero
+      int newTotal = _preferences!.totalFlashcardsLearned + count;
+      if (newTotal < 0) newTotal = 0;
+      
       await savePreferences(_preferences!.copyWith(
-        totalFlashcardsLearned: _preferences!.totalFlashcardsLearned + count
+        totalFlashcardsLearned: newTotal
       ));
       
       // Check for achievements
@@ -101,7 +108,7 @@ class UserProvider with ChangeNotifier {
   void checkForAchievements() async {
     if (_preferences == null) return;
     
-    // Check flashcard achievements
+    // Flashcard achievements
     if (_preferences!.totalFlashcardsLearned >= 10) {
       await addAchievement(Achievement(
         id: 'flashcards_10',
@@ -132,7 +139,7 @@ class UserProvider with ChangeNotifier {
       ));
     }
     
-    // Check streak achievements
+    // Streak achievements
     if (_preferences!.streakDays >= 3) {
       await addAchievement(Achievement(
         id: 'streak_3',
@@ -162,5 +169,56 @@ class UserProvider with ChangeNotifier {
         dateEarned: DateTime.now(),
       ));
     }
+    
+    // Quiz achievements based on scores
+    if (_preferences!.quizScores.isNotEmpty) {
+      // Check for perfect score achievement
+      bool hasPerfectScore = _preferences!.quizScores.values.any((score) => score >= 100);
+      if (hasPerfectScore) {
+        await addAchievement(Achievement(
+          id: 'quiz_perfect',
+          title: 'Perfect Score',
+          description: 'Achieved a perfect 100% on a quiz',
+          iconName: 'emoji_events',
+          dateEarned: DateTime.now(),
+        ));
+      }
+      
+      // Achievement for completing multiple quizzes
+      if (_preferences!.quizScores.length >= 3) {
+        await addAchievement(Achievement(
+          id: 'quiz_3',
+          title: 'Quiz Enthusiast',
+          description: 'Completed 3 different quizzes',
+          iconName: 'quiz',
+          dateEarned: DateTime.now(),
+        ));
+      }
+      
+      // Achievement for good average score
+      double avgScore = _calculateAverageQuizScore();
+      if (avgScore >= 80 && _preferences!.quizScores.length >= 2) {
+        await addAchievement(Achievement(
+          id: 'quiz_master',
+          title: 'Quiz Master',
+          description: 'Maintained an average score of 80% or higher across multiple quizzes',
+          iconName: 'psychology',
+          dateEarned: DateTime.now(),
+        ));
+      }
+    }
+  }
+  
+  double _calculateAverageQuizScore() {
+    if (_preferences == null || _preferences!.quizScores.isEmpty) {
+      return 0.0;
+    }
+    
+    double total = 0.0;
+    for (final score in _preferences!.quizScores.values) {
+      total += score;
+    }
+    
+    return total / _preferences!.quizScores.length;
   }
 }

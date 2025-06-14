@@ -1,0 +1,2 @@
+/Users/geekysmac/Desktop/My_Projects/Subodh/Kan_App/Kannada_App/android/app/.cxx/Debug/44713t6d/armeabi-v7a/CMakeFiles/edit_cache.dir
+/Users/geekysmac/Desktop/My_Projects/Subodh/Kan_App/Kannada_App/android/app/.cxx/Debug/44713t6d/armeabi-v7a/CMakeFiles/rebuild_cache.dir

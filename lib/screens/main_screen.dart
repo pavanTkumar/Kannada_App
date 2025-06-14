@@ -1,4 +1,4 @@
-// lib/screens/main_navigation_screen.dart
+// lib/screens/main_screen.dart
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 import '../providers/lesson_provider.dart';
@@ -19,12 +19,15 @@ class _MainNavigationScreenState extends State<MainNavigationScreen> {
   bool _initialized = false;
 
   @override
-  void didChangeDependencies() {
-    super.didChangeDependencies();
-    if (!_initialized) {
-      _initialized = true;
-      context.read<LessonProvider>().initializeLessons();
-    }
+  void initState() {
+    super.initState();
+    // We'll initialize lessons in a post-frame callback
+    WidgetsBinding.instance.addPostFrameCallback((_) {
+      if (!_initialized) {
+        _initialized = true;
+        Provider.of<LessonProvider>(context, listen: false).initializeLessons();
+      }
+    });
   }
 
   static const List<Widget> _screens = [

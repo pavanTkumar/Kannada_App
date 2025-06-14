@@ -84,9 +84,8 @@ class MyApp extends StatelessWidget {
               ),
             ),
           ),
-          home: userProvider.isInitialized
-            ? const SplashScreen()
-            : const SetupScreen(),
+          // Always start with the SplashScreen, which will handle the navigation logic
+          home: const SplashScreen(),
         );
       },
     );
