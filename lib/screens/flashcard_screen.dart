@@ -37,18 +37,17 @@ class _FlashcardScreenState extends State<FlashcardScreen> with SingleTickerProv
     super.initState();
     _controller = AnimationController(
       vsync: this,
-      duration: const Duration(milliseconds: 300),
+      duration: const Duration(milliseconds: 600), // Slightly slower for better UX
     );
-    _animation = TweenSequence<double>([
-      TweenSequenceItem(
-        tween: Tween(begin: 0.0, end: pi / 2),
-        weight: 50,
-      ),
-      TweenSequenceItem(
-        tween: Tween(begin: -pi / 2, end: 0.0),
-        weight: 50,
-      ),
-    ]).animate(_controller);
+    
+    // Improved animation curve for smoother flipping
+    _animation = Tween<double>(
+      begin: 0.0,
+      end: 1.0,
+    ).animate(CurvedAnimation(
+      parent: _controller,
+      curve: Curves.easeInOut,
+    ));
     
     _animation.addStatusListener((status) {
       if (status == AnimationStatus.completed) {
@@ -81,14 +80,19 @@ class _FlashcardScreenState extends State<FlashcardScreen> with SingleTickerProv
     if (_isAnimating) return;
     
     _isAnimating = true;
-    setState(() {
-      _showFront = !_showFront;
-    });
     
     if (_controller.status == AnimationStatus.completed) {
-      _controller.reverse();
+      _controller.reverse().then((_) {
+        setState(() {
+          _showFront = true;
+        });
+      });
     } else {
-      _controller.forward();
+      _controller.forward().then((_) {
+        setState(() {
+          _showFront = false;
+        });
+      });
     }
   }
 
@@ -324,11 +328,16 @@ class _FlashcardScreenState extends State<FlashcardScreen> with SingleTickerProv
               child: AnimatedBuilder(
                 animation: _animation,
                 builder: (context, child) {
-                  final transform = Matrix4.identity()
-                    ..setEntry(3, 2, 0.001)
-                    ..rotateY(_animation.value);
+                  // Calculate rotation angle
+                  final rotationValue = _animation.value * pi;
                   
-                  final isBack = _animation.value >= pi / 2;
+                  // Determine if we should show back content
+                  final showBack = rotationValue >= pi / 2;
+                  
+                  // Create transform matrix
+                  final transform = Matrix4.identity()
+                    ..setEntry(3, 2, 0.001) // Perspective
+                    ..rotateY(rotationValue);
                   
                   return Transform(
                     alignment: Alignment.center,
@@ -354,66 +363,71 @@ class _FlashcardScreenState extends State<FlashcardScreen> with SingleTickerProv
                             begin: Alignment.topLeft,
                             end: Alignment.bottomRight,
                             colors: [
-                              isBack ? Colors.blue[50]! : AppColors.primary.withOpacity(0.1),
-                              isBack ? Colors.blue[100]! : AppColors.primary.withOpacity(0.2),
+                              showBack ? Colors.blue[50]! : AppColors.primary.withOpacity(0.1),
+                              showBack ? Colors.blue[100]! : AppColors.primary.withOpacity(0.2),
                             ],
                           ),
                         ),
-                        child: Column(
-                          mainAxisAlignment: MainAxisAlignment.center,
-                          children: [
-                            if (isBack) ...[
-                              const Text(
-                                'ENGLISH',
-                                style: TextStyle(
-                                  fontSize: 12,
-                                  fontWeight: FontWeight.bold,
-                                  color: Colors.grey,
+                        child: Transform(
+                          alignment: Alignment.center,
+                          // Counter-rotate the content when showing back to prevent inversion
+                          transform: Matrix4.identity()..rotateY(showBack ? pi : 0),
+                          child: Column(
+                            mainAxisAlignment: MainAxisAlignment.center,
+                            children: [
+                              if (showBack) ...[
+                                const Text(
+                                  'ENGLISH',
+                                  style: TextStyle(
+                                    fontSize: 12,
+                                    fontWeight: FontWeight.bold,
+                                    color: Colors.grey,
+                                  ),
                                 ),
+                                const SizedBox(height: 20),
+                                Text(
+                                  widget.lesson.flashcards[_currentIndex].english,
+                                  style: const TextStyle(
+                                    fontSize: 36,
+                                    fontWeight: FontWeight.bold,
+                                  ),
+                                  textAlign: TextAlign.center,
+                                ),
+                              ] else ...[
+                                const Text(
+                                  'KANNADA',
+                                  style: TextStyle(
+                                    fontSize: 12,
+                                    fontWeight: FontWeight.bold,
+                                    color: Colors.grey,
+                                  ),
+                                ),
+                                const SizedBox(height: 20),
+                                Text(
+                                  widget.lesson.flashcards[_currentIndex].kannada,
+                                  style: const TextStyle(
+                                    fontSize: 72,
+                                    fontWeight: FontWeight.bold,
+                                  ),
+                                  textAlign: TextAlign.center,
+                                ),
+                              ],
+                              const SizedBox(height: 40),
+                              Icon(
+                                Icons.touch_app,
+                                color: Colors.grey[400],
+                                size: 30,
                               ),
-                              const SizedBox(height: 20),
+                              const SizedBox(height: 8),
                               Text(
-                                widget.lesson.flashcards[_currentIndex].english,
-                                style: const TextStyle(
-                                  fontSize: 36,
-                                  fontWeight: FontWeight.bold,
-                                ),
-                                textAlign: TextAlign.center,
-                              ),
-                            ] else ...[
-                              const Text(
-                                'KANNADA',
+                                'Tap to flip',
                                 style: TextStyle(
-                                  fontSize: 12,
-                                  fontWeight: FontWeight.bold,
-                                  color: Colors.grey,
+                                  fontSize: 14,
+                                  color: Colors.grey[600],
                                 ),
-                              ),
-                              const SizedBox(height: 20),
-                              Text(
-                                widget.lesson.flashcards[_currentIndex].kannada,
-                                style: const TextStyle(
-                                  fontSize: 72,
-                                  fontWeight: FontWeight.bold,
-                                ),
-                                textAlign: TextAlign.center,
                               ),
                             ],
-                            const SizedBox(height: 40),
-                            Icon(
-                              Icons.touch_app,
-                              color: Colors.grey[400],
-                              size: 30,
-                            ),
-                            const SizedBox(height: 8),
-                            Text(
-                              'Tap to flip',
-                              style: TextStyle(
-                                fontSize: 14,
-                                color: Colors.grey[600],
-                              ),
-                            ),
-                          ],
+                          ),
                         ),
                       ),
                     ),
