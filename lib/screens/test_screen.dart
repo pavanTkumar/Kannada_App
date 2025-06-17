@@ -1,6 +1,7 @@
 // lib/screens/test_screen.dart
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
+import '../l10n/app_localizations.dart';
 import '../constants/app_colors.dart';
 import '../providers/quiz_provider.dart';
 import '../providers/user_provider.dart';
@@ -31,6 +32,8 @@ class _TestScreenState extends State<TestScreen> {
 
   @override
   Widget build(BuildContext context) {
+    final l10n = AppLocalizations.of(context);
+    
     return Consumer<QuizProvider>(
       builder: (context, quizProvider, child) {
         if (quizProvider.isLoading) {
@@ -40,7 +43,7 @@ class _TestScreenState extends State<TestScreen> {
         final quizzes = quizProvider.quizzes;
 
         return Scaffold(
-          backgroundColor: Colors.white,
+          backgroundColor: Theme.of(context).scaffoldBackgroundColor,
           body: SafeArea(
             child: Column(
               crossAxisAlignment: CrossAxisAlignment.start,
@@ -50,16 +53,16 @@ class _TestScreenState extends State<TestScreen> {
                   child: Column(
                     crossAxisAlignment: CrossAxisAlignment.start,
                     children: [
-                      const Text(
-                        'Test Your Knowledge',
-                        style: TextStyle(
+                      Text(
+                        l10n.testYourKnowledge,
+                        style: const TextStyle(
                           fontSize: 24,
                           fontWeight: FontWeight.bold,
                         ),
                       ),
                       const SizedBox(height: 8),
                       Text(
-                        'Take quizzes to test your Kannada learning progress',
+                        l10n.quizzesToTestProgress,
                         style: TextStyle(
                           fontSize: 16,
                           color: Colors.grey[600],
@@ -74,7 +77,7 @@ class _TestScreenState extends State<TestScreen> {
                     itemCount: quizzes.length,
                     itemBuilder: (context, index) {
                       final quiz = quizzes[index];
-                      return _buildQuizCard(context, quiz);
+                      return _buildQuizCard(context, quiz, l10n);
                     },
                   ),
                 ),
@@ -86,12 +89,12 @@ class _TestScreenState extends State<TestScreen> {
     );
   }
 
-  Widget _buildQuizCard(BuildContext context, Quiz quiz) {
-    String statusText = "Not started";
+  Widget _buildQuizCard(BuildContext context, Quiz quiz, AppLocalizations l10n) {
+    String statusText = l10n.notStarted;
     Color statusColor = Colors.grey;
     
     if (quiz.isCompleted) {
-      statusText = "${quiz.score.toInt()}% Score";
+      statusText = l10n.scorePercent(quiz.score.toInt());
       if (quiz.score >= 80) {
         statusColor = Colors.green;
       } else if (quiz.score >= 60) {
@@ -100,6 +103,10 @@ class _TestScreenState extends State<TestScreen> {
         statusColor = Colors.red;
       }
     }
+
+    // Get localized quiz title and description
+    final localizedTitle = _getLocalizedQuizTitle(quiz.id, l10n);
+    final localizedDescription = _getLocalizedQuizDescription(quiz.id, l10n);
 
     return Card(
       margin: const EdgeInsets.only(bottom: 16),
@@ -127,7 +134,7 @@ class _TestScreenState extends State<TestScreen> {
                 children: [
                   Expanded(
                     child: Text(
-                      quiz.title,
+                      localizedTitle,
                       style: const TextStyle(
                         fontSize: 18,
                         fontWeight: FontWeight.bold,
@@ -156,7 +163,7 @@ class _TestScreenState extends State<TestScreen> {
               ),
               const SizedBox(height: 8),
               Text(
-                quiz.description,
+                localizedDescription,
                 style: TextStyle(
                   fontSize: 14,
                   color: Colors.grey[600],
@@ -179,7 +186,7 @@ class _TestScreenState extends State<TestScreen> {
                   ),
                   const SizedBox(width: 8),
                   Text(
-                    '${quiz.questions.length} questions',
+                    '${quiz.questions.length} ${l10n.questions}',
                     style: TextStyle(
                       fontSize: 14,
                       color: Colors.grey[600],
@@ -198,5 +205,35 @@ class _TestScreenState extends State<TestScreen> {
         ),
       ),
     );
+  }
+
+  String _getLocalizedQuizTitle(String quizId, AppLocalizations l10n) {
+    switch (quizId) {
+      case 'basic_vowels':
+        return '${l10n.vowels} ${l10n.test}';
+      case 'basic_consonants':
+        return '${l10n.consonants} ${l10n.test}';
+      case 'basic_numbers':
+        return '${l10n.numbers} ${l10n.test}';
+      case 'mixed_basic':
+        return 'Mixed ${l10n.kannadaBasics} ${l10n.test}';
+      default:
+        return quizId;
+    }
+  }
+
+  String _getLocalizedQuizDescription(String quizId, AppLocalizations l10n) {
+    switch (quizId) {
+      case 'basic_vowels':
+        return l10n.vowelsDescription;
+      case 'basic_consonants':
+        return l10n.consonantsDescription;
+      case 'basic_numbers':
+        return l10n.numbersDescription;
+      case 'mixed_basic':
+        return 'Test your mixed knowledge of ${l10n.kannadaBasics.toLowerCase()}';
+      default:
+        return 'Test your knowledge';
+    }
   }
 }

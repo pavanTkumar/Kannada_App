@@ -1,9 +1,11 @@
 // lib/providers/user_provider.dart
 import 'package:flutter/foundation.dart';
+import 'package:flutter/material.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 import 'dart:convert';
 import '../models/user_preferences.dart';
 import '../models/achievement_model.dart';
+import '../utils/language_helper.dart';
 
 class UserProvider with ChangeNotifier {
   static const String _prefsKey = 'user_preferences';
@@ -11,6 +13,7 @@ class UserProvider with ChangeNotifier {
   
   UserPreferences? get preferences => _preferences;
   bool get isInitialized => _preferences != null;
+  Locale get currentLocale => _preferences?.locale ?? const Locale('en');
 
   Future<void> loadPreferences() async {
     final prefs = await SharedPreferences.getInstance();
@@ -54,6 +57,16 @@ class UserProvider with ChangeNotifier {
   Future<void> updateDarkMode(bool isDarkMode) async {
     if (_preferences != null) {
       await savePreferences(_preferences!.copyWith(isDarkMode: isDarkMode));
+    }
+  }
+
+  Future<void> updateLanguage(String languageName) async {
+    if (_preferences != null) {
+      final locale = LanguageHelper.getLocaleFromLanguageName(languageName);
+      await savePreferences(_preferences!.copyWith(
+        preferredLanguage: languageName,
+        locale: locale,
+      ));
     }
   }
 

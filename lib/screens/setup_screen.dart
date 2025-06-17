@@ -1,9 +1,11 @@
 // lib/screens/setup_screen.dart
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
+import '../l10n/app_localizations.dart';
 import '../constants/app_colors.dart';
 import '../models/user_preferences.dart';
 import '../providers/user_provider.dart';
+import '../utils/language_helper.dart';
 import 'main_screen.dart';
 
 class SetupScreen extends StatefulWidget {
@@ -22,8 +24,6 @@ class _SetupScreenState extends State<SetupScreen> with SingleTickerProviderStat
   late AnimationController _animationController;
   late Animation<double> _fadeAnimation;
   late Animation<Offset> _slideAnimation;
-
-  final List<String> _languages = ['English', 'हिंदी', 'ಕನ್ನಡ', 'తెలుగు'];
   
   @override
   void initState() {
@@ -61,9 +61,11 @@ class _SetupScreenState extends State<SetupScreen> with SingleTickerProviderStat
 
   void _submitForm() async {
     if (_formKey.currentState!.validate()) {
+      final locale = LanguageHelper.getLocaleFromLanguageName(_selectedLanguage);
       final preferences = UserPreferences(
         name: _nameController.text,
         preferredLanguage: _selectedLanguage,
+        locale: locale,
         isDarkMode: _isDarkMode,
       );
 
@@ -80,7 +82,6 @@ class _SetupScreenState extends State<SetupScreen> with SingleTickerProviderStat
 
   void _nextStep() {
     if (_currentStep == 0 && _nameController.text.isEmpty) {
-      // Show validation error for name
       _formKey.currentState!.validate();
       return;
     }
@@ -102,6 +103,8 @@ class _SetupScreenState extends State<SetupScreen> with SingleTickerProviderStat
 
   @override
   Widget build(BuildContext context) {
+    final l10n = AppLocalizations.of(context)!;
+    
     return Scaffold(
       backgroundColor: Colors.white,
       body: SafeArea(
@@ -131,17 +134,17 @@ class _SetupScreenState extends State<SetupScreen> with SingleTickerProviderStat
                   ),
                 ),
                 const SizedBox(height: 32),
-                const Text(
-                  'Welcome to Learn Kannada!',
-                  style: TextStyle(
+                Text(
+                  l10n.welcomeTitle,
+                  style: const TextStyle(
                     fontSize: 28,
                     fontWeight: FontWeight.bold,
                   ),
                 ),
                 const SizedBox(height: 8),
-                const Text(
-                  'Let\'s set up your learning profile',
-                  style: TextStyle(
+                Text(
+                  l10n.welcomeSubtitle,
+                  style: const TextStyle(
                     fontSize: 16,
                     color: Colors.grey,
                   ),
@@ -174,7 +177,7 @@ class _SetupScreenState extends State<SetupScreen> with SingleTickerProviderStat
                     child: AnimatedContainer(
                       duration: const Duration(milliseconds: 300),
                       curve: Curves.easeInOut,
-                      child: _buildCurrentStep(),
+                      child: _buildCurrentStep(l10n),
                     ),
                   ),
                 ),
@@ -195,7 +198,7 @@ class _SetupScreenState extends State<SetupScreen> with SingleTickerProviderStat
                           children: [
                             const Icon(Icons.arrow_back),
                             const SizedBox(width: 4),
-                            Text(_currentStep == 2 ? 'Previous' : 'Back'),
+                            Text(_currentStep == 2 ? l10n.previous : l10n.back),
                           ],
                         ),
                       )
@@ -214,7 +217,7 @@ class _SetupScreenState extends State<SetupScreen> with SingleTickerProviderStat
                       ),
                       child: Row(
                         children: [
-                          Text(_currentStep == 2 ? 'Get Started' : 'Next'),
+                          Text(_currentStep == 2 ? l10n.getStarted : l10n.next),
                           const SizedBox(width: 4),
                           const Icon(Icons.arrow_forward),
                         ],
@@ -230,25 +233,25 @@ class _SetupScreenState extends State<SetupScreen> with SingleTickerProviderStat
     );
   }
   
-  Widget _buildCurrentStep() {
+  Widget _buildCurrentStep(AppLocalizations l10n) {
     switch (_currentStep) {
       case 0:
-        return _buildNameStep();
+        return _buildNameStep(l10n);
       case 1:
-        return _buildLanguageStep();
+        return _buildLanguageStep(l10n);
       case 2:
-        return _buildFinalStep();
+        return _buildFinalStep(l10n);
       default:
         return const SizedBox.shrink();
     }
   }
   
-  Widget _buildNameStep() {
+  Widget _buildNameStep(AppLocalizations l10n) {
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
         Text(
-          'What should we call you?',
+          l10n.whatShouldWeCallYou,
           style: TextStyle(
             fontSize: 20,
             fontWeight: FontWeight.bold,
@@ -256,9 +259,9 @@ class _SetupScreenState extends State<SetupScreen> with SingleTickerProviderStat
           ),
         ),
         const SizedBox(height: 8),
-        const Text(
-          'We\'ll use this to personalize your experience',
-          style: TextStyle(
+        Text(
+          l10n.personalizeExperience,
+          style: const TextStyle(
             fontSize: 14,
             color: Colors.grey,
           ),
@@ -267,8 +270,8 @@ class _SetupScreenState extends State<SetupScreen> with SingleTickerProviderStat
         TextFormField(
           controller: _nameController,
           decoration: InputDecoration(
-            labelText: 'Your Name',
-            hintText: 'E.g., John, Ravi, Priya...',
+            labelText: l10n.yourName,
+            hintText: l10n.nameHint,
             prefixIcon: const Icon(Icons.person),
             border: OutlineInputBorder(
               borderRadius: BorderRadius.circular(12),
@@ -287,10 +290,10 @@ class _SetupScreenState extends State<SetupScreen> with SingleTickerProviderStat
           ),
           validator: (value) {
             if (value == null || value.isEmpty) {
-              return 'Please enter your name';
+              return l10n.nameValidation;
             }
             if (value.length < 2) {
-              return 'Name must be at least 2 characters';
+              return l10n.nameMinLength;
             }
             return null;
           },
@@ -302,12 +305,12 @@ class _SetupScreenState extends State<SetupScreen> with SingleTickerProviderStat
     );
   }
   
-  Widget _buildLanguageStep() {
+  Widget _buildLanguageStep(AppLocalizations l10n) {
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
         Text(
-          'Choose your preferred language',
+          l10n.choosePreferredLanguage,
           style: TextStyle(
             fontSize: 20,
             fontWeight: FontWeight.bold,
@@ -315,9 +318,9 @@ class _SetupScreenState extends State<SetupScreen> with SingleTickerProviderStat
           ),
         ),
         const SizedBox(height: 8),
-        const Text(
-          'We\'ll show translations in this language',
-          style: TextStyle(
+        Text(
+          l10n.translationsInLanguage,
+          style: const TextStyle(
             fontSize: 14,
             color: Colors.grey,
           ),
@@ -325,9 +328,8 @@ class _SetupScreenState extends State<SetupScreen> with SingleTickerProviderStat
         const SizedBox(height: 24),
         
         // Language selection cards
-        ...List.generate(
-          _languages.length,
-          (index) => _buildLanguageCard(_languages[index]),
+        ...LanguageHelper.languageNames.map(
+          (language) => _buildLanguageCard(language),
         ),
       ],
     );
@@ -391,12 +393,12 @@ class _SetupScreenState extends State<SetupScreen> with SingleTickerProviderStat
     );
   }
   
-  Widget _buildFinalStep() {
+  Widget _buildFinalStep(AppLocalizations l10n) {
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
         Text(
-          'Almost there, ${_nameController.text}!',
+          l10n.almostThere(_nameController.text),
           style: TextStyle(
             fontSize: 20,
             fontWeight: FontWeight.bold,
@@ -404,9 +406,9 @@ class _SetupScreenState extends State<SetupScreen> with SingleTickerProviderStat
           ),
         ),
         const SizedBox(height: 8),
-        const Text(
-          'Review your preferences and start learning',
-          style: TextStyle(
+        Text(
+          l10n.reviewPreferences,
+          style: const TextStyle(
             fontSize: 14,
             color: Colors.grey,
           ),
@@ -425,19 +427,19 @@ class _SetupScreenState extends State<SetupScreen> with SingleTickerProviderStat
             children: [
               _buildSummaryRow(
                 icon: Icons.person,
-                title: 'Name',
+                title: l10n.name,
                 value: _nameController.text,
               ),
               const Divider(),
               _buildSummaryRow(
                 icon: Icons.language,
-                title: 'Language',
+                title: l10n.language,
                 value: _selectedLanguage,
               ),
               const Divider(),
               SwitchListTile(
-                title: const Text('Dark Mode'),
-                subtitle: const Text('Enable dark theme'),
+                title: Text(l10n.darkMode),
+                subtitle: Text(l10n.enableDarkTheme),
                 value: _isDarkMode,
                 onChanged: (value) {
                   setState(() {
@@ -467,10 +469,10 @@ class _SetupScreenState extends State<SetupScreen> with SingleTickerProviderStat
                 color: AppColors.primary,
               ),
               const SizedBox(width: 12),
-              const Expanded(
+              Expanded(
                 child: Text(
-                  'You can change these settings anytime from your profile',
-                  style: TextStyle(
+                  l10n.changeSettingsAnytime,
+                  style: const TextStyle(
                     fontSize: 14,
                     color: Colors.black87,
                   ),

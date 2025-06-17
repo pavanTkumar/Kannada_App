@@ -1,31 +1,35 @@
 // lib/screens/profile_screen.dart
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
+import '../l10n/app_localizations.dart';
 import '../providers/user_provider.dart';
 import '../constants/app_colors.dart';
 import '../models/achievement_model.dart';
+import '../utils/language_helper.dart';
 
 class ProfileScreen extends StatelessWidget {
   const ProfileScreen({super.key});
 
   @override
   Widget build(BuildContext context) {
+    final l10n = AppLocalizations.of(context)!;
+    
     return Consumer<UserProvider>(
       builder: (context, userProvider, _) {
         final user = userProvider.preferences;
         if (user == null) return const Center(child: CircularProgressIndicator());
 
         return Scaffold(
-          backgroundColor: Colors.white,
+          backgroundColor: Theme.of(context).scaffoldBackgroundColor,
           body: SafeArea(
             child: SingleChildScrollView(
               padding: const EdgeInsets.all(16.0),
               child: Column(
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
-                  const Text(
-                    'Profile',
-                    style: TextStyle(
+                  Text(
+                    l10n.profile,
+                    style: const TextStyle(
                       fontSize: 24,
                       fontWeight: FontWeight.bold,
                     ),
@@ -65,7 +69,7 @@ class ProfileScreen extends StatelessWidget {
                             ),
                             const SizedBox(width: 4),
                             Text(
-                              '${user.streakDays} Day Streak',
+                              l10n.dayStreak(user.streakDays),
                               style: const TextStyle(
                                 fontSize: 14,
                                 color: Colors.orange,
@@ -86,9 +90,9 @@ class ProfileScreen extends StatelessWidget {
                       child: Column(
                         crossAxisAlignment: CrossAxisAlignment.start,
                         children: [
-                          const Text(
-                            'Learning Statistics',
-                            style: TextStyle(
+                          Text(
+                            l10n.learningStatistics,
+                            style: const TextStyle(
                               fontSize: 18,
                               fontWeight: FontWeight.bold,
                             ),
@@ -96,20 +100,20 @@ class ProfileScreen extends StatelessWidget {
                           const SizedBox(height: 16),
                           _buildStatTile(
                             icon: Icons.school,
-                            title: 'Flashcards Learned',
+                            title: l10n.flashcardsLearned,
                             value: user.totalFlashcardsLearned.toString(),
                           ),
                           const Divider(),
                           _buildStatTile(
                             icon: Icons.quiz,
-                            title: 'Quizzes Completed',
+                            title: l10n.quizzesCompleted,
                             value: user.quizScores.length.toString(),
                           ),
                           if (user.quizScores.isNotEmpty) ...[
                             const Divider(),
                             _buildStatTile(
                               icon: Icons.emoji_events,
-                              title: 'Average Quiz Score',
+                              title: l10n.averageQuizScore,
                               value: '${_calculateAverageQuizScore(user.quizScores)}%',
                             ),
                           ],
@@ -121,16 +125,16 @@ class ProfileScreen extends StatelessWidget {
                   const SizedBox(height: 24),
                   
                   // Achievements Section
-                  const Text(
-                    'Achievements',
-                    style: TextStyle(
+                  Text(
+                    l10n.achievements,
+                    style: const TextStyle(
                       fontSize: 18,
                       fontWeight: FontWeight.bold,
                     ),
                   ),
                   const SizedBox(height: 16),
                   user.achievements.isEmpty
-                      ? _buildEmptyAchievements()
+                      ? _buildEmptyAchievements(l10n)
                       : _buildAchievementsList(user.achievements),
                   
                   const SizedBox(height: 24),
@@ -142,22 +146,35 @@ class ProfileScreen extends StatelessWidget {
                       child: Column(
                         crossAxisAlignment: CrossAxisAlignment.start,
                         children: [
-                          const Text(
-                            'Personal Information',
-                            style: TextStyle(
+                          Text(
+                            l10n.personalInformation,
+                            style: const TextStyle(
                               fontSize: 18,
                               fontWeight: FontWeight.bold,
                             ),
                           ),
                           const SizedBox(height: 16),
+                          
+                          // Language Selection
                           ListTile(
                             leading: const Icon(Icons.language),
-                            title: const Text('Preferred Language'),
-                            subtitle: Text(user.preferredLanguage),
+                            title: Text(l10n.preferredLanguage),
+                            subtitle: Text(
+                              LanguageHelper.getLanguageDisplayName(
+                                user.preferredLanguage, 
+                                user.locale
+                              )
+                            ),
+                            trailing: const Icon(Icons.arrow_forward_ios, size: 16),
+                            onTap: () => _showLanguageSelector(context, userProvider, l10n),
                           ),
+                          
+                          const Divider(),
+                          
+                          // Dark Mode Toggle
                           SwitchListTile(
-                            title: const Text('Dark Mode'),
-                            subtitle: Text(user.isDarkMode ? 'On' : 'Off'),
+                            title: Text(l10n.darkMode),
+                            subtitle: Text(user.isDarkMode ? l10n.on : l10n.off),
                             value: user.isDarkMode,
                             onChanged: (bool value) {
                               userProvider.updateDarkMode(value);
@@ -177,19 +194,19 @@ class ProfileScreen extends StatelessWidget {
                       padding: const EdgeInsets.all(16.0),
                       child: Column(
                         crossAxisAlignment: CrossAxisAlignment.start,
-                        children: const [
+                        children: [
                           Text(
-                            'App Information',
-                            style: TextStyle(
+                            l10n.appInformation,
+                            style: const TextStyle(
                               fontSize: 18,
                               fontWeight: FontWeight.bold,
                             ),
                           ),
-                          SizedBox(height: 16),
+                          const SizedBox(height: 16),
                           ListTile(
-                            leading: Icon(Icons.info_outline),
-                            title: Text('Version'),
-                            subtitle: Text('1.0.0'),
+                            leading: const Icon(Icons.info_outline),
+                            title: Text(l10n.version),
+                            subtitle: const Text('1.0.0'),
                           ),
                         ],
                       ),
@@ -201,6 +218,152 @@ class ProfileScreen extends StatelessWidget {
           ),
         );
       },
+    );
+  }
+
+  void _showLanguageSelector(BuildContext context, UserProvider userProvider, AppLocalizations l10n) {
+    showModalBottomSheet(
+      context: context,
+      isScrollControlled: true,
+      backgroundColor: Colors.transparent,
+      builder: (context) => Container(
+        decoration: BoxDecoration(
+          color: Theme.of(context).scaffoldBackgroundColor,
+          borderRadius: const BorderRadius.vertical(top: Radius.circular(20)),
+        ),
+        padding: const EdgeInsets.all(16),
+        child: Column(
+          mainAxisSize: MainAxisSize.min,
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            // Handle bar
+            Center(
+              child: Container(
+                width: 40,
+                height: 4,
+                decoration: BoxDecoration(
+                  color: Colors.grey[300],
+                  borderRadius: BorderRadius.circular(2),
+                ),
+              ),
+            ),
+            const SizedBox(height: 16),
+            
+            Text(
+              l10n.choosePreferredLanguage,
+              style: const TextStyle(
+                fontSize: 20,
+                fontWeight: FontWeight.bold,
+              ),
+            ),
+            const SizedBox(height: 8),
+            Text(
+              l10n.translationsInLanguage,
+              style: TextStyle(
+                fontSize: 14,
+                color: Colors.grey[600],
+              ),
+            ),
+            const SizedBox(height: 24),
+            
+            // Language options
+            ...LanguageHelper.languageNames.map((language) {
+              final isSelected = language == userProvider.preferences?.preferredLanguage;
+              final displayName = LanguageHelper.getLanguageDisplayName(
+                language, 
+                userProvider.currentLocale
+              );
+              
+              return Card(
+                margin: const EdgeInsets.only(bottom: 8),
+                elevation: isSelected ? 2 : 1,
+                shape: RoundedRectangleBorder(
+                  borderRadius: BorderRadius.circular(12),
+                  side: BorderSide(
+                    color: isSelected ? AppColors.primary : Colors.transparent,
+                    width: 2,
+                  ),
+                ),
+                child: ListTile(
+                  leading: Container(
+                    width: 24,
+                    height: 24,
+                    decoration: BoxDecoration(
+                      shape: BoxShape.circle,
+                      border: Border.all(
+                        color: isSelected ? AppColors.primary : Colors.grey,
+                        width: 2,
+                      ),
+                      color: isSelected ? AppColors.primary : Colors.transparent,
+                    ),
+                    child: isSelected
+                        ? const Icon(
+                            Icons.check,
+                            size: 16,
+                            color: Colors.white,
+                          )
+                        : null,
+                  ),
+                  title: Text(
+                    displayName,
+                    style: TextStyle(
+                      fontWeight: isSelected ? FontWeight.bold : FontWeight.normal,
+                    ),
+                  ),
+                  subtitle: language != displayName ? Text(
+                    language,
+                    style: TextStyle(
+                      fontSize: 12,
+                      color: Colors.grey[600],
+                    ),
+                  ) : null,
+                  onTap: () async {
+                    await userProvider.updateLanguage(language);
+                    if (context.mounted) {
+                      Navigator.pop(context);
+                      
+                      // Show success message
+                      ScaffoldMessenger.of(context).showSnackBar(
+                        SnackBar(
+                          content: Text(
+                            AppLocalizations.of(context)!.preferredLanguage + ' ' +
+                            AppLocalizations.of(context)!.language.toLowerCase() + ' updated!',
+                          ),
+                          backgroundColor: AppColors.primary,
+                          behavior: SnackBarBehavior.floating,
+                          shape: RoundedRectangleBorder(
+                            borderRadius: BorderRadius.circular(8),
+                          ),
+                        ),
+                      );
+                    }
+                  },
+                ),
+              );
+            }),
+            
+            const SizedBox(height: 16),
+            
+            // Cancel button
+            SizedBox(
+              width: double.infinity,
+              child: TextButton(
+                onPressed: () => Navigator.pop(context),
+                style: TextButton.styleFrom(
+                  padding: const EdgeInsets.symmetric(vertical: 16),
+                ),
+                child: Text(
+                  l10n.back,
+                  style: const TextStyle(fontSize: 16),
+                ),
+              ),
+            ),
+            
+            // Add bottom padding for safe area
+            SizedBox(height: MediaQuery.of(context).padding.bottom),
+          ],
+        ),
+      ),
     );
   }
 
@@ -245,7 +408,7 @@ class ProfileScreen extends StatelessWidget {
     );
   }
 
-  Widget _buildEmptyAchievements() {
+  Widget _buildEmptyAchievements(AppLocalizations l10n) {
     return Center(
       child: Column(
         children: [
@@ -257,7 +420,7 @@ class ProfileScreen extends StatelessWidget {
           ),
           const SizedBox(height: 16),
           Text(
-            'No achievements yet',
+            l10n.noAchievementsYet,
             style: TextStyle(
               fontSize: 16,
               color: Colors.grey[600],
@@ -266,7 +429,7 @@ class ProfileScreen extends StatelessWidget {
           ),
           const SizedBox(height: 8),
           Text(
-            'Keep learning to earn achievements!',
+            l10n.keepLearningEarnAchievements,
             style: TextStyle(
               fontSize: 14,
               color: Colors.grey[600],
@@ -313,6 +476,9 @@ class ProfileScreen extends StatelessWidget {
         break;
       case 'workspace_premium':
         iconData = Icons.workspace_premium;
+        break;
+      case 'psychology':
+        iconData = Icons.psychology;
         break;
       default:
         iconData = Icons.emoji_events;

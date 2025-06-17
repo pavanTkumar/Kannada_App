@@ -1,8 +1,9 @@
 // lib/main.dart
 import 'package:flutter/material.dart';
+import 'package:flutter_localizations/flutter_localizations.dart';
 import 'package:provider/provider.dart';
+import 'l10n/app_localizations.dart';
 import 'screens/splash_screen.dart';
-import 'screens/setup_screen.dart';
 import 'constants/app_colors.dart';
 import 'providers/lesson_provider.dart';
 import 'providers/user_provider.dart';
@@ -38,6 +39,17 @@ class MyApp extends StatelessWidget {
           navigatorKey: navigatorKey,
           title: 'Learn Kannada',
           debugShowCheckedModeBanner: false,
+          
+          // Internationalization
+          localizationsDelegates: [
+            AppLocalizations.delegate,
+            GlobalMaterialLocalizations.delegate,
+            GlobalWidgetsLocalizations.delegate,
+            GlobalCupertinoLocalizations.delegate,
+          ],
+          supportedLocales: AppLocalizations.supportedLocales,
+          locale: userProvider.currentLocale,
+          
           themeMode: userProvider.preferences?.isDarkMode ?? false 
             ? ThemeMode.dark 
             : ThemeMode.light,
@@ -47,6 +59,7 @@ class MyApp extends StatelessWidget {
             colorScheme: ColorScheme.fromSeed(
               seedColor: AppColors.primary,
               primary: AppColors.primary,
+              brightness: Brightness.light,
             ),
             appBarTheme: const AppBarTheme(
               backgroundColor: AppColors.primary,
@@ -73,9 +86,16 @@ class MyApp extends StatelessWidget {
           ),
           darkTheme: ThemeData.dark().copyWith(
             primaryColor: AppColors.primary,
+            scaffoldBackgroundColor: Colors.grey[900],
             colorScheme: ColorScheme.dark(
               primary: AppColors.primary,
               secondary: AppColors.primary,
+              surface: Colors.grey[800]!,
+            ),
+            appBarTheme: AppBarTheme(
+              backgroundColor: Colors.grey[900],
+              foregroundColor: Colors.white,
+              elevation: 0,
             ),
             elevatedButtonTheme: ElevatedButtonThemeData(
               style: ElevatedButton.styleFrom(
@@ -83,8 +103,14 @@ class MyApp extends StatelessWidget {
                 foregroundColor: Colors.white,
               ),
             ),
+            cardTheme: CardTheme(
+              color: Colors.grey[800],
+              elevation: 2,
+              shape: RoundedRectangleBorder(
+                borderRadius: BorderRadius.circular(12),
+              ),
+            ),
           ),
-          // Always start with the SplashScreen, which will handle the navigation logic
           home: const SplashScreen(),
         );
       },

@@ -1,0 +1,157 @@
+{
+  "@@locale": "en",
+  "appName": "Learn Kannada",
+  "appSubtitle": "ಕನ್ನಡ ಕಲಿ",
+  "home": "Home",
+  "progress": "Progress",
+  "test": "Test",
+  "profile": "Profile",
+  "welcomeTitle": "Welcome to Learn Kannada!",
+  "welcomeSubtitle": "Let's set up your learning profile",
+  "whatShouldWeCallYou": "What should we call you?",
+  "personalizeExperience": "We'll use this to personalize your experience",
+  "yourName": "Your Name",
+  "nameHint": "E.g., John, Ravi, Priya...",
+  "nameValidation": "Please enter your name",
+  "nameMinLength": "Name must be at least 2 characters",
+  "choosePreferredLanguage": "Choose your preferred language",
+  "translationsInLanguage": "We'll show translations in this language",
+  "almostThere": "Almost there, {name}!",
+  "@almostThere": {
+    "placeholders": {
+      "name": {
+        "type": "String"
+      }
+    }
+  },
+  "reviewPreferences": "Review your preferences and start learning",
+  "name": "Name",
+  "language": "Language",
+  "darkMode": "Dark Mode",
+  "enableDarkTheme": "Enable dark theme",
+  "changeSettingsAnytime": "You can change these settings anytime from your profile",
+  "getStarted": "Get Started",
+  "next": "Next",
+  "back": "Back",
+  "previous": "Previous",
+  "kannadaBasics": "Kannada Basics",
+  "practicalPhrases": "Practical Phrases",
+  "yourLearningProgress": "Your Learning Progress",
+  "keepGoingGreat": "Keep going! You're doing great",
+  "cardsLearned": "Cards Learned",
+  "avgProgress": "Avg. Progress",
+  "quizzesDone": "Quizzes Done",
+  "yourProgress": "Your Progress",
+  "testYourKnowledge": "Test Your Knowledge",
+  "quizzesToTestProgress": "Take quizzes to test your Kannada learning progress",
+  "notStarted": "Not started",
+  "scorePercent": "{score}% Score",
+  "@scorePercent": {
+    "placeholders": {
+      "score": {
+        "type": "int"
+      }
+    }
+  },
+  "questions": "questions",
+  "learningStatistics": "Learning Statistics",
+  "flashcardsLearned": "Flashcards Learned",
+  "quizzesCompleted": "Quizzes Completed",
+  "averageQuizScore": "Average Quiz Score",
+  "achievements": "Achievements",
+  "noAchievementsYet": "No achievements yet",
+  "keepLearningEarnAchievements": "Keep learning to earn achievements!",
+  "personalInformation": "Personal Information",
+  "preferredLanguage": "Preferred Language",
+  "appInformation": "App Information",
+  "version": "Version",
+  "on": "On",
+  "off": "Off",
+  "dayStreak": "{days} Day Streak",
+  "@dayStreak": {
+    "placeholders": {
+      "days": {
+        "type": "int"
+      }
+    }
+  },
+  "vowels": "Vowels",
+  "consonants": "Consonants",
+  "numbers": "Numbers",
+  "greetings": "Greetings",
+  "dailyPhrases": "Daily Phrases",
+  "foodDrinks": "Food & Drinks",
+  "vowelsKannada": "ಸ್ವರಗಳು",
+  "consonantsKannada": "ವ್ಯಂಜನಗಳು",
+  "numbersKannada": "ಅಂಕಿಗಳು",
+  "greetingsKannada": "ಶುಭಾಶಯಗಳು",
+  "dailyPhrasesKannada": "ದೈನಂದಿನ ವಾಕ್ಯಗಳು",
+  "foodDrinksKannada": "ಆಹಾರ & ಪಾನೀಯಗಳು",
+  "vowelsDescription": "Learn the basic vowels in Kannada alphabet",
+  "consonantsDescription": "Master the basic consonants in Kannada",
+  "numbersDescription": "Learn counting in Kannada",
+  "greetingsDescription": "Common greetings and expressions",
+  "dailyPhrasesDescription": "Essential phrases for everyday conversations",
+  "foodDrinksDescription": "Learn about food and drinks in Kannada",
+  "complete": "Complete",
+  "cardOf": "Card {current} of {total}",
+  "@cardOf": {
+    "placeholders": {
+      "current": {
+        "type": "int"
+      },
+      "total": {
+        "type": "int"
+      }
+    }
+  },
+  "learned": "learned",
+  "kannada": "Kannada",
+  "english": "English",
+  "tapCardToFlip": "Tap card to flip",
+  "markAsLearned": "Mark as Learned",
+  "reset": "Reset",
+  "howToUseFlashcards": "How to Use Flashcards",
+  "tapCardToFlipInfo": "Tap card to flip",
+  "markCardsAsLearned": "Mark cards as learned",
+  "practiceRegularly": "Practice regularly",
+  "gotIt": "Got it",
+  "quizResults": "Quiz Results",
+  "excellentMaster": "Excellent! You're a Kannada master!",
+  "greatJobLearning": "Great job! You're learning well!",
+  "goodEffortKeepPracticing": "Good effort! Keep practicing!",
+  "keepTryingImprove": "Keep trying! You'll improve with practice!",
+  "questionSummary": "Question Summary",
+  "backToQuizzes": "Back to Quizzes",
+  "score": "Score",
+  "questionNumber": "Question {number}",
+  "@questionNumber": {
+    "placeholders": {
+      "number": {
+        "type": "int"
+      }
+    }
+  },
+  "correctAnswer": "Correct answer: {answer}",
+  "@correctAnswer": {
+    "placeholders": {
+      "answer": {
+        "type": "String"
+      }
+    }
+  },
+  "questionNumberOfTotal": "Question {current}/{total}",
+  "@questionNumberOfTotal": {
+    "placeholders": {
+      "current": {
+        "type": "int"
+      },
+      "total": {
+        "type": "int"
+      }
+    }
+  },
+  "checkAnswer": "Check Answer",
+  "nextQuestion": "Next Question",
+  "seeResults": "See Results"
+}

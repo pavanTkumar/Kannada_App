@@ -1,6 +1,7 @@
 // lib/screens/home_screen.dart
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
+import '../l10n/app_localizations.dart';
 import '../constants/app_colors.dart';
 import '../providers/lesson_provider.dart';
 import '../providers/user_provider.dart';
@@ -13,6 +14,7 @@ class HomeScreen extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final l10n = AppLocalizations.of(context)!;
     final userProvider = Provider.of<UserProvider>(context);
     final user = userProvider.preferences;
 
@@ -36,7 +38,7 @@ class HomeScreen extends StatelessWidget {
         ].whereType<Lesson>().toList();
 
         return Scaffold(
-          backgroundColor: Colors.white,
+          backgroundColor: Theme.of(context).scaffoldBackgroundColor,
           body: SafeArea(
             child: SingleChildScrollView(
               child: Padding(
@@ -48,21 +50,21 @@ class HomeScreen extends StatelessWidget {
                     Row(
                       mainAxisAlignment: MainAxisAlignment.spaceBetween,
                       children: [
-                        const Column(
+                        Column(
                           crossAxisAlignment: CrossAxisAlignment.start,
                           children: [
                             Text(
-                              'ಕನ್ನಡ ಕಲಿ',
-                              style: TextStyle(
+                              l10n.appSubtitle,
+                              style: const TextStyle(
                                 fontSize: 24,
                                 fontWeight: FontWeight.bold,
                               ),
                             ),
                             Text(
-                              'Learn Kannada',
+                              l10n.appName,
                               style: TextStyle(
                                 fontSize: 16,
-                                color: Colors.grey,
+                                color: Colors.grey[600],
                               ),
                             ),
                           ],
@@ -90,7 +92,6 @@ class HomeScreen extends StatelessWidget {
                                       color: Colors.orange,
                                       size: 18,
                                     ),
-                                    const SizedBox(width: 4),
                                     Text(
                                       '${user.streakDays}',
                                       style: const TextStyle(
@@ -109,14 +110,14 @@ class HomeScreen extends StatelessWidget {
 
                     // User progress card
                     if (user != null && lessonProvider.lessons.isNotEmpty)
-                      _buildProgressCard(context, lessonProvider, user),
+                      _buildProgressCard(context, lessonProvider, user, l10n),
                       
                     const SizedBox(height: 24),
                     
                     // Alphabet & Numbers section
-                    const Text(
-                      'Kannada Basics',
-                      style: TextStyle(
+                    Text(
+                      l10n.kannadaBasics,
+                      style: const TextStyle(
                         fontSize: 20,
                         fontWeight: FontWeight.bold,
                       ),
@@ -126,6 +127,7 @@ class HomeScreen extends StatelessWidget {
                       _buildLessonCard(
                         context,
                         lesson,
+                        l10n,
                         () => _navigateToLesson(context, lesson),
                       ),
                     ),
@@ -133,9 +135,9 @@ class HomeScreen extends StatelessWidget {
                     const SizedBox(height: 24),
                     
                     // Phrases section
-                    const Text(
-                      'Practical Phrases',
-                      style: TextStyle(
+                    Text(
+                      l10n.practicalPhrases,
+                      style: const TextStyle(
                         fontSize: 20,
                         fontWeight: FontWeight.bold,
                       ),
@@ -145,6 +147,7 @@ class HomeScreen extends StatelessWidget {
                       _buildLessonCard(
                         context,
                         lesson,
+                        l10n,
                         () => _navigateToLesson(context, lesson),
                       ),
                     ),
@@ -158,7 +161,7 @@ class HomeScreen extends StatelessWidget {
     );
   }
 
-  Widget _buildProgressCard(BuildContext context, LessonProvider lessonProvider, UserPreferences user) {
+  Widget _buildProgressCard(BuildContext context, LessonProvider lessonProvider, UserPreferences user, AppLocalizations l10n) {
     final avgProgress = lessonProvider.getAverageProgress();
     
     return Card(
@@ -189,15 +192,15 @@ class HomeScreen extends StatelessWidget {
                 Column(
                   crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
-                    const Text(
-                      'Your Learning Progress',
-                      style: TextStyle(
+                    Text(
+                      l10n.yourLearningProgress,
+                      style: const TextStyle(
                         fontSize: 16,
                         fontWeight: FontWeight.bold,
                       ),
                     ),
                     Text(
-                      'Keep going! You\'re doing great',
+                      l10n.keepGoingGreat,
                       style: TextStyle(
                         fontSize: 14,
                         color: Colors.grey[600],
@@ -213,17 +216,17 @@ class HomeScreen extends StatelessWidget {
               children: [
                 _buildStatItem(
                   '${user.totalFlashcardsLearned}',
-                  'Cards Learned',
+                  l10n.cardsLearned,
                   Icons.school,
                 ),
                 _buildStatItem(
                   '${avgProgress.toInt()}%',
-                  'Avg. Progress',
+                  l10n.avgProgress,
                   Icons.trending_up,
                 ),
                 _buildStatItem(
                   '${user.quizScores.length}',
-                  'Quizzes Done',
+                  l10n.quizzesDone,
                   Icons.quiz,
                 ),
               ],
@@ -237,8 +240,14 @@ class HomeScreen extends StatelessWidget {
   Widget _buildLessonCard(
     BuildContext context,
     Lesson lesson,
+    AppLocalizations l10n,
     VoidCallback onTap,
   ) {
+    // Get localized lesson titles and descriptions
+    String localizedTitle = _getLocalizedLessonTitle(lesson.id, l10n);
+    String localizedKannadaTitle = _getLocalizedKannadaTitle(lesson.id, l10n);
+    String localizedDescription = _getLocalizedLessonDescription(lesson.id, l10n);
+
     return Padding(
       padding: const EdgeInsets.only(bottom: 12),
       child: InkWell(
@@ -247,7 +256,7 @@ class HomeScreen extends StatelessWidget {
         child: Container(
           padding: const EdgeInsets.all(16),
           decoration: BoxDecoration(
-            color: Colors.white,
+            color: Theme.of(context).cardColor,
             borderRadius: BorderRadius.circular(12),
             boxShadow: [
               BoxShadow(
@@ -269,7 +278,7 @@ class HomeScreen extends StatelessWidget {
                       crossAxisAlignment: CrossAxisAlignment.start,
                       children: [
                         Text(
-                          lesson.kannadaTitle,
+                          localizedKannadaTitle,
                           style: const TextStyle(
                             fontSize: 18,
                             fontWeight: FontWeight.w500,
@@ -277,10 +286,10 @@ class HomeScreen extends StatelessWidget {
                         ),
                         const SizedBox(height: 4),
                         Text(
-                          lesson.title,
-                          style: const TextStyle(
+                          localizedTitle,
+                          style: TextStyle(
                             fontSize: 14,
-                            color: Colors.grey,
+                            color: Colors.grey[600],
                           ),
                         ),
                       ],
@@ -302,10 +311,10 @@ class HomeScreen extends StatelessWidget {
                   ),
                 ],
               ),
-              if (lesson.description.isNotEmpty) ...[
+              if (localizedDescription.isNotEmpty) ...[
                 const SizedBox(height: 8),
                 Text(
-                  lesson.description,
+                  localizedDescription,
                   style: TextStyle(
                     fontSize: 13,
                     color: Colors.grey[600],
@@ -325,7 +334,7 @@ class HomeScreen extends StatelessWidget {
                 mainAxisAlignment: MainAxisAlignment.spaceBetween,
                 children: [
                   Text(
-                    '${lesson.progress.toInt()}% Complete',
+                    '${lesson.progress.toInt()}% ${l10n.complete}',
                     style: TextStyle(
                       fontSize: 12,
                       color: Colors.grey[600],
@@ -343,6 +352,63 @@ class HomeScreen extends StatelessWidget {
         ),
       ),
     );
+  }
+
+  String _getLocalizedLessonTitle(String lessonId, AppLocalizations l10n) {
+    switch (lessonId) {
+      case 'vowels':
+        return l10n.vowels;
+      case 'consonants':
+        return l10n.consonants;
+      case 'numbers':
+        return l10n.numbers;
+      case 'greetings':
+        return l10n.greetings;
+      case 'daily_phrases':
+        return l10n.dailyPhrases;
+      case 'food':
+        return l10n.foodDrinks;
+      default:
+        return lessonId;
+    }
+  }
+
+  String _getLocalizedKannadaTitle(String lessonId, AppLocalizations l10n) {
+    switch (lessonId) {
+      case 'vowels':
+        return l10n.vowelsKannada;
+      case 'consonants':
+        return l10n.consonantsKannada;
+      case 'numbers':
+        return l10n.numbersKannada;
+      case 'greetings':
+        return l10n.greetingsKannada;
+      case 'daily_phrases':
+        return l10n.dailyPhrasesKannada;
+      case 'food':
+        return l10n.foodDrinksKannada;
+      default:
+        return lessonId;
+    }
+  }
+
+  String _getLocalizedLessonDescription(String lessonId, AppLocalizations l10n) {
+    switch (lessonId) {
+      case 'vowels':
+        return l10n.vowelsDescription;
+      case 'consonants':
+        return l10n.consonantsDescription;
+      case 'numbers':
+        return l10n.numbersDescription;
+      case 'greetings':
+        return l10n.greetingsDescription;
+      case 'daily_phrases':
+        return l10n.dailyPhrasesDescription;
+      case 'food':
+        return l10n.foodDrinksDescription;
+      default:
+        return '';
+    }
   }
 
   Widget _buildStatItem(String value, String label, IconData icon) {
@@ -374,6 +440,7 @@ class HomeScreen extends StatelessWidget {
             fontSize: 12,
             color: Colors.grey[600],
           ),
+          textAlign: TextAlign.center,
         ),
       ],
     );
