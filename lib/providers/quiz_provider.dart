@@ -2,10 +2,11 @@
 import 'package:flutter/foundation.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 import 'dart:convert';
+import 'dart:math';
 import '../models/quiz_model.dart';
 
 class QuizProvider with ChangeNotifier {
-  static const String _quizDataKey = 'quiz_data';
+  // Removed unused _quizDataKey field
   static const String _quizProgressKey = 'quiz_progress';
   
   List<Quiz> _quizzes = [];
@@ -21,6 +22,9 @@ class QuizProvider with ChangeNotifier {
     try {
       // Load quiz data
       _quizzes = _getQuizData();
+      
+      // Shuffle options for each quiz question
+      _shuffleAllQuizOptions();
       
       // Load progress
       final prefs = await SharedPreferences.getInstance();
@@ -54,6 +58,25 @@ class QuizProvider with ChangeNotifier {
     
     _isLoading = false;
     notifyListeners();
+  }
+  
+  // Shuffle all quiz options
+  void _shuffleAllQuizOptions() {
+    final random = Random();
+    
+    for (final quiz in _quizzes) {
+      for (final question in quiz.questions) {
+        // Create a mapping of options to preserve the correct answer
+        final originalOptions = List<String>.from(question.options);
+        final originalCorrectAnswer = originalOptions[question.correctAnswerIndex];
+        
+        // Shuffle the options
+        question.options.shuffle(random);
+        
+        // Find the new index of the correct answer
+        question.correctAnswerIndex = question.options.indexOf(originalCorrectAnswer);
+      }
+    }
   }
   
   Future<void> saveQuizProgress(Quiz quiz) async {
@@ -109,6 +132,12 @@ class QuizProvider with ChangeNotifier {
     }
     
     await saveQuizProgress(quiz);
+  }
+  
+  // Reshuffle the options for all quizzes - can be called when app is resumed
+  Future<void> reshuffleAllQuizOptions() async {
+    _shuffleAllQuizOptions();
+    notifyListeners();
   }
   
   List<Quiz> _getQuizData() {

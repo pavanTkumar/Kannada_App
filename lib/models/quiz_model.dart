@@ -3,7 +3,7 @@ class QuizQuestion {
   final String question;
   final String kannada;
   final List<String> options;
-  final int correctAnswerIndex;
+  int correctAnswerIndex; // Changed from final to allow modification
   bool isAnswered;
   bool isCorrect;
 
