@@ -6,6 +6,7 @@ import 'dart:convert';
 import '../models/user_preferences.dart';
 import '../models/achievement_model.dart';
 import '../utils/language_helper.dart';
+import '../utils/navigator_key.dart';
 
 class UserProvider with ChangeNotifier {
   static const String _prefsKey = 'user_preferences';
@@ -67,6 +68,17 @@ class UserProvider with ChangeNotifier {
         preferredLanguage: languageName,
         locale: locale,
       ));
+      
+      // Make sure the app rebuilds with the new locale
+      if (navigatorKey.currentContext != null) {
+        final state = navigatorKey.currentState;
+        if (state != null) {
+          // Force rebuild by popping to first route and pushing again if possible
+          if (state.canPop()) {
+            state.popUntil((route) => route.isFirst);
+          }
+        }
+      }
     }
   }
 

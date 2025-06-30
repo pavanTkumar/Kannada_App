@@ -13,6 +13,7 @@ class ProfileScreen extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final l10n = AppLocalizations.of(context)!;
+    final isDarkMode = Theme.of(context).brightness == Brightness.dark;
     
     return Consumer<UserProvider>(
       builder: (context, userProvider, _) {
@@ -102,12 +103,14 @@ class ProfileScreen extends StatelessWidget {
                             icon: Icons.school,
                             title: l10n.flashcardsLearned,
                             value: user.totalFlashcardsLearned.toString(),
+                            isDarkMode: isDarkMode,
                           ),
                           const Divider(),
                           _buildStatTile(
                             icon: Icons.quiz,
                             title: l10n.quizzesCompleted,
                             value: user.quizScores.length.toString(),
+                            isDarkMode: isDarkMode,
                           ),
                           if (user.quizScores.isNotEmpty) ...[
                             const Divider(),
@@ -115,6 +118,7 @@ class ProfileScreen extends StatelessWidget {
                               icon: Icons.emoji_events,
                               title: l10n.averageQuizScore,
                               value: '${_calculateAverageQuizScore(user.quizScores)}%',
+                              isDarkMode: isDarkMode,
                             ),
                           ],
                         ],
@@ -134,8 +138,8 @@ class ProfileScreen extends StatelessWidget {
                   ),
                   const SizedBox(height: 16),
                   user.achievements.isEmpty
-                      ? _buildEmptyAchievements(l10n)
-                      : _buildAchievementsList(user.achievements),
+                      ? _buildEmptyAchievements(l10n, isDarkMode)
+                      : _buildAchievementsList(user.achievements, isDarkMode),
                   
                   const SizedBox(height: 24),
                   
@@ -166,7 +170,7 @@ class ProfileScreen extends StatelessWidget {
                               )
                             ),
                             trailing: const Icon(Icons.arrow_forward_ios, size: 16),
-                            onTap: () => _showLanguageSelector(context, userProvider, l10n),
+                            onTap: () => _showLanguageSelector(context, userProvider, l10n, isDarkMode),
                           ),
                           
                           const Divider(),
@@ -179,7 +183,10 @@ class ProfileScreen extends StatelessWidget {
                             onChanged: (bool value) {
                               userProvider.updateDarkMode(value);
                             },
-                            secondary: const Icon(Icons.dark_mode),
+                            secondary: Icon(
+                              user.isDarkMode ? Icons.dark_mode : Icons.light_mode,
+                              color: AppColors.primary,
+                            ),
                           ),
                         ],
                       ),
@@ -221,7 +228,8 @@ class ProfileScreen extends StatelessWidget {
     );
   }
 
-  void _showLanguageSelector(BuildContext context, UserProvider userProvider, AppLocalizations l10n) {
+  void _showLanguageSelector(BuildContext context, UserProvider userProvider, 
+      AppLocalizations l10n, bool isDarkMode) {
     showModalBottomSheet(
       context: context,
       isScrollControlled: true,
@@ -242,7 +250,7 @@ class ProfileScreen extends StatelessWidget {
                 width: 40,
                 height: 4,
                 decoration: BoxDecoration(
-                  color: Colors.grey[300],
+                  color: isDarkMode ? Colors.grey[700] : Colors.grey[300],
                   borderRadius: BorderRadius.circular(2),
                 ),
               ),
@@ -261,7 +269,7 @@ class ProfileScreen extends StatelessWidget {
               l10n.translationsInLanguage,
               style: TextStyle(
                 fontSize: 14,
-                color: Colors.grey[600],
+                color: isDarkMode ? Colors.grey[400] : Colors.grey[600],
               ),
             ),
             const SizedBox(height: 24),
@@ -291,7 +299,7 @@ class ProfileScreen extends StatelessWidget {
                     decoration: BoxDecoration(
                       shape: BoxShape.circle,
                       border: Border.all(
-                        color: isSelected ? AppColors.primary : Colors.grey,
+                        color: isSelected ? AppColors.primary : (isDarkMode ? Colors.grey[500]! : Colors.grey),
                         width: 2,
                       ),
                       color: isSelected ? AppColors.primary : Colors.transparent,
@@ -314,7 +322,7 @@ class ProfileScreen extends StatelessWidget {
                     language,
                     style: TextStyle(
                       fontSize: 12,
-                      color: Colors.grey[600],
+                      color: isDarkMode ? Colors.grey[400] : Colors.grey[600],
                     ),
                   ) : null,
                   onTap: () async {
@@ -326,8 +334,7 @@ class ProfileScreen extends StatelessWidget {
                       ScaffoldMessenger.of(context).showSnackBar(
                         SnackBar(
                           content: Text(
-                            AppLocalizations.of(context)!.preferredLanguage + ' ' +
-                            AppLocalizations.of(context)!.language.toLowerCase() + ' updated!',
+                            "${l10n.preferredLanguage} ${l10n.language.toLowerCase()} updated!",
                           ),
                           backgroundColor: AppColors.primary,
                           behavior: SnackBarBehavior.floating,
@@ -371,6 +378,7 @@ class ProfileScreen extends StatelessWidget {
     required IconData icon,
     required String title,
     required String value,
+    required bool isDarkMode,
   }) {
     return Padding(
       padding: const EdgeInsets.symmetric(vertical: 8.0),
@@ -379,7 +387,7 @@ class ProfileScreen extends StatelessWidget {
           Container(
             padding: const EdgeInsets.all(8),
             decoration: BoxDecoration(
-              color: AppColors.primary.withOpacity(0.1),
+              color: AppColors.primary.withValues(alpha: isDarkMode ? 40 : 26),
               borderRadius: BorderRadius.circular(8),
             ),
             child: Icon(
@@ -408,7 +416,7 @@ class ProfileScreen extends StatelessWidget {
     );
   }
 
-  Widget _buildEmptyAchievements(AppLocalizations l10n) {
+  Widget _buildEmptyAchievements(AppLocalizations l10n, bool isDarkMode) {
     return Center(
       child: Column(
         children: [
@@ -416,14 +424,14 @@ class ProfileScreen extends StatelessWidget {
           Icon(
             Icons.emoji_events_outlined,
             size: 64,
-            color: Colors.grey[400],
+            color: isDarkMode ? Colors.grey[600] : Colors.grey[400],
           ),
           const SizedBox(height: 16),
           Text(
             l10n.noAchievementsYet,
             style: TextStyle(
               fontSize: 16,
-              color: Colors.grey[600],
+              color: isDarkMode ? Colors.grey[400] : Colors.grey[600],
               fontWeight: FontWeight.bold,
             ),
           ),
@@ -432,7 +440,7 @@ class ProfileScreen extends StatelessWidget {
             l10n.keepLearningEarnAchievements,
             style: TextStyle(
               fontSize: 14,
-              color: Colors.grey[600],
+              color: isDarkMode ? Colors.grey[500] : Colors.grey[600],
             ),
           ),
           const SizedBox(height: 24),
@@ -441,7 +449,7 @@ class ProfileScreen extends StatelessWidget {
     );
   }
 
-  Widget _buildAchievementsList(List<Achievement> achievements) {
+  Widget _buildAchievementsList(List<Achievement> achievements, bool isDarkMode) {
     return GridView.builder(
       shrinkWrap: true,
       physics: const NeverScrollableScrollPhysics(),
@@ -454,12 +462,12 @@ class ProfileScreen extends StatelessWidget {
       itemCount: achievements.length,
       itemBuilder: (context, index) {
         final achievement = achievements[index];
-        return _buildAchievementCard(achievement);
+        return _buildAchievementCard(achievement, isDarkMode);
       },
     );
   }
 
-  Widget _buildAchievementCard(Achievement achievement) {
+  Widget _buildAchievementCard(Achievement achievement, bool isDarkMode) {
     IconData iconData;
     switch (achievement.iconName) {
       case 'school':
@@ -515,7 +523,7 @@ class ProfileScreen extends StatelessWidget {
               achievement.description,
               style: TextStyle(
                 fontSize: 12,
-                color: Colors.grey[600],
+                color: isDarkMode ? Colors.grey[400] : Colors.grey[600],
               ),
               textAlign: TextAlign.center,
               maxLines: 2,

@@ -1,6 +1,7 @@
 // lib/widgets/bottom_nav_bar.dart
 import 'package:flutter/material.dart';
 import '../constants/app_colors.dart';
+import '../l10n/app_localizations.dart';
 
 class BottomNavBar extends StatelessWidget {
   final int currentIndex;
@@ -14,28 +15,32 @@ class BottomNavBar extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final l10n = AppLocalizations.of(context)!;
+    final isDarkMode = Theme.of(context).brightness == Brightness.dark;
+    
     return BottomNavigationBar(
       currentIndex: currentIndex,
       onTap: onTap,
       type: BottomNavigationBarType.fixed,
       selectedItemColor: AppColors.primary,
-      unselectedItemColor: Colors.grey,
-      items: const [
+      unselectedItemColor: isDarkMode ? Colors.grey[400] : Colors.grey,
+      backgroundColor: isDarkMode ? Colors.grey[900] : Colors.white,
+      items: [
         BottomNavigationBarItem(
-          icon: Icon(Icons.home),
-          label: 'Home',
+          icon: const Icon(Icons.home),
+          label: l10n.home,
         ),
         BottomNavigationBarItem(
-          icon: Icon(Icons.bar_chart),
-          label: 'Progress',
+          icon: const Icon(Icons.bar_chart),
+          label: l10n.progress,
         ),
         BottomNavigationBarItem(
-          icon: Icon(Icons.quiz),
-          label: 'Test',
+          icon: const Icon(Icons.quiz),
+          label: l10n.test,
         ),
         BottomNavigationBarItem(
-          icon: Icon(Icons.person),
-          label: 'Profile',
+          icon: const Icon(Icons.person),
+          label: l10n.profile,
         ),
       ],
     );

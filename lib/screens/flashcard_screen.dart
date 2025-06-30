@@ -1,9 +1,12 @@
+// lib/screens/flashcard_screen.dart
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
+import 'package:flutter_tts/flutter_tts.dart';
 import '../l10n/app_localizations.dart';
 import '../constants/app_colors.dart';
 import '../models/flashcard_model.dart';
 import '../providers/lesson_provider.dart';
+import '../providers/user_provider.dart';
 import 'dart:math' show pi;
 
 class FlashcardScreen extends StatefulWidget {
@@ -24,6 +27,8 @@ class _FlashcardScreenState extends State<FlashcardScreen> with SingleTickerProv
   bool _showFront = true;
   int _currentIndex = 0;
   late bool _isCurrentCardLearned;
+  late FlutterTts _flutterTts;
+  bool _isSpeaking = false;
 
   @override
   void initState() {
@@ -44,10 +49,48 @@ class _FlashcardScreenState extends State<FlashcardScreen> with SingleTickerProv
     ]).animate(_controller);
 
     _isCurrentCardLearned = widget.lesson.flashcards[_currentIndex].isLearned;
+    _initTts();
+  }
+
+  void _initTts() async {
+    _flutterTts = FlutterTts();
+    await _flutterTts.setLanguage("kn-IN"); // Set language to Kannada
+    await _flutterTts.setSpeechRate(0.5); // Slower speech rate for better learning
+    
+    _flutterTts.setStartHandler(() {
+      setState(() {
+        _isSpeaking = true;
+      });
+    });
+    
+    _flutterTts.setCompletionHandler(() {
+      setState(() {
+        _isSpeaking = false;
+      });
+    });
+    
+    _flutterTts.setErrorHandler((message) {
+      setState(() {
+        _isSpeaking = false;
+      });
+    });
+  }
+  
+  Future<void> _speak(String text) async {
+    if (_isSpeaking) {
+      await _flutterTts.stop();
+      setState(() {
+        _isSpeaking = false;
+      });
+      return;
+    }
+    
+    await _flutterTts.speak(text);
   }
 
   @override
   void dispose() {
+    _flutterTts.stop();
     _controller.dispose();
     super.dispose();
   }
@@ -87,7 +130,7 @@ class _FlashcardScreenState extends State<FlashcardScreen> with SingleTickerProv
   }
 
   void _toggleLearned() {
-    final lessonProvider = context.read<LessonProvider>();
+    final lessonProvider = Provider.of<LessonProvider>(context, listen: false);
     
     if (_isCurrentCardLearned) {
       lessonProvider.markFlashcardAsLearned(
@@ -130,6 +173,11 @@ class _FlashcardScreenState extends State<FlashcardScreen> with SingleTickerProv
               contentPadding: EdgeInsets.zero,
             ),
             ListTile(
+              leading: const Icon(Icons.volume_up),
+              title: Text("Tap the speaker icon to hear pronunciation"),
+              contentPadding: EdgeInsets.zero,
+            ),
+            ListTile(
               leading: const Icon(Icons.repeat),
               title: Text(l10n.practiceRegularly),
               contentPadding: EdgeInsets.zero,
@@ -150,6 +198,7 @@ class _FlashcardScreenState extends State<FlashcardScreen> with SingleTickerProv
   Widget build(BuildContext context) {
     final l10n = AppLocalizations.of(context)!;
     final currentFlashcard = widget.lesson.flashcards[_currentIndex];
+    final isDarkMode = Theme.of(context).brightness == Brightness.dark;
     
     return Scaffold(
       appBar: AppBar(
@@ -165,7 +214,7 @@ class _FlashcardScreenState extends State<FlashcardScreen> with SingleTickerProv
         children: [
           Container(
             padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 12),
-            color: Colors.grey.shade50,
+            color: isDarkMode ? Colors.grey[900] : Colors.grey.shade50,
             child: Column(
               children: [
                 Row(
@@ -173,9 +222,9 @@ class _FlashcardScreenState extends State<FlashcardScreen> with SingleTickerProv
                   children: [
                     Text(
                       l10n.cardOf(_currentIndex + 1, widget.lesson.flashcards.length),
-                      style: const TextStyle(
+                      style: TextStyle(
                         fontSize: 14,
-                        color: Colors.grey,
+                        color: isDarkMode ? Colors.grey[300] : Colors.grey,
                       ),
                     ),
                     Row(
@@ -188,9 +237,9 @@ class _FlashcardScreenState extends State<FlashcardScreen> with SingleTickerProv
                         const SizedBox(width: 4),
                         Text(
                           '${widget.lesson.flashcards.where((f) => f.isLearned).length} ${l10n.learned}',
-                          style: const TextStyle(
+                          style: TextStyle(
                             fontSize: 14,
-                            color: Colors.grey,
+                            color: isDarkMode ? Colors.grey[300] : Colors.grey,
                           ),
                         ),
                       ],
@@ -200,7 +249,7 @@ class _FlashcardScreenState extends State<FlashcardScreen> with SingleTickerProv
                 const SizedBox(height: 8),
                 LinearProgressIndicator(
                   value: (_currentIndex + 1) / widget.lesson.flashcards.length,
-                  backgroundColor: Colors.grey.shade200,
+                  backgroundColor: isDarkMode ? Colors.grey[800] : Colors.grey.shade200,
                   valueColor: AlwaysStoppedAnimation<Color>(AppColors.primary),
                   minHeight: 6,
                   borderRadius: BorderRadius.circular(3),
@@ -235,16 +284,16 @@ class _FlashcardScreenState extends State<FlashcardScreen> with SingleTickerProv
                           width: double.infinity,
                           padding: const EdgeInsets.all(24),
                           decoration: BoxDecoration(
-                            color: Colors.white,
+                            color: isDarkMode ? Colors.grey[850] : Colors.white,
                             borderRadius: BorderRadius.circular(20),
                             gradient: LinearGradient(
                               begin: Alignment.topLeft,
                               end: Alignment.bottomRight,
                               colors: [
-                                Colors.white,
+                                isDarkMode ? Colors.grey[800]! : Colors.white,
                                 currentFlashcard.isLearned 
-                                    ? Colors.green.shade50 
-                                    : AppColors.primary.withValues(alpha: 0.05),
+                                    ? (isDarkMode ? Colors.green.withValues(alpha: 40) : Colors.green.shade50)
+                                    : (isDarkMode ? AppColors.primary.withValues(alpha: 40) : AppColors.primary.withValues(alpha: 13)),
                               ],
                             ),
                           ),
@@ -255,7 +304,7 @@ class _FlashcardScreenState extends State<FlashcardScreen> with SingleTickerProv
                                 Container(
                                   padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 6),
                                   decoration: BoxDecoration(
-                                    color: Colors.green.shade50,
+                                    color: isDarkMode ? Colors.green.withValues(alpha: 40) : Colors.green.shade50,
                                     borderRadius: BorderRadius.circular(16),
                                     border: Border.all(
                                       color: Colors.green.shade300,
@@ -282,22 +331,36 @@ class _FlashcardScreenState extends State<FlashcardScreen> with SingleTickerProv
                                   ),
                                 ),
                               const SizedBox(height: 20),
-                              Text(
-                                _showFront ? l10n.kannada : l10n.english,
-                                style: TextStyle(
-                                  fontSize: 14,
-                                  color: Colors.grey.shade700,
-                                ),
+                              Row(
+                                mainAxisAlignment: MainAxisAlignment.center,
+                                children: [
+                                  Text(
+                                    _showFront ? l10n.kannada : l10n.preferredLanguage,
+                                    style: TextStyle(
+                                      fontSize: 14,
+                                      color: isDarkMode ? Colors.grey[400] : Colors.grey[700],
+                                    ),
+                                  ),
+                                  if (_showFront)
+                                    IconButton(
+                                      icon: Icon(
+                                        _isSpeaking ? Icons.volume_off : Icons.volume_up,
+                                        color: AppColors.primary,
+                                      ),
+                                      onPressed: () => _speak(currentFlashcard.kannada),
+                                      tooltip: "Hear pronunciation",
+                                    ),
+                                ],
                               ),
                               const SizedBox(height: 20),
                               Container(
                                 padding: const EdgeInsets.all(20),
                                 decoration: BoxDecoration(
-                                  color: Colors.white,
+                                  color: isDarkMode ? Colors.grey[800] : Colors.white,
                                   borderRadius: BorderRadius.circular(16),
                                   boxShadow: [
                                     BoxShadow(
-                                      color: Colors.grey.shade200,
+                                      color: isDarkMode ? Colors.black26 : Colors.grey.shade200,
                                       blurRadius: 10,
                                       spreadRadius: 1,
                                     ),
@@ -308,9 +371,9 @@ class _FlashcardScreenState extends State<FlashcardScreen> with SingleTickerProv
                               const SizedBox(height: 30),
                               Text(
                                 l10n.tapCardToFlip,
-                                style: const TextStyle(
+                                style: TextStyle(
                                   fontSize: 14,
-                                  color: Colors.grey,
+                                  color: isDarkMode ? Colors.grey[500] : Colors.grey,
                                   fontStyle: FontStyle.italic,
                                 ),
                               ),
@@ -333,7 +396,9 @@ class _FlashcardScreenState extends State<FlashcardScreen> with SingleTickerProv
                 IconButton(
                   icon: const Icon(Icons.arrow_back_ios),
                   onPressed: _currentIndex > 0 ? _previousCard : null,
-                  color: _currentIndex > 0 ? AppColors.primary : Colors.grey.shade300,
+                  color: _currentIndex > 0 
+                      ? AppColors.primary 
+                      : (isDarkMode ? Colors.grey[700] : Colors.grey.shade300),
                   iconSize: 28,
                 ),
                 ElevatedButton(
@@ -356,7 +421,7 @@ class _FlashcardScreenState extends State<FlashcardScreen> with SingleTickerProv
                       ),
                       const SizedBox(width: 8),
                       Text(
-                        _isCurrentCardLearned ? AppLocalizations.of(context)!.reset : AppLocalizations.of(context)!.markAsLearned,
+                        _isCurrentCardLearned ? l10n.reset : l10n.markAsLearned,
                         style: const TextStyle(
                           fontSize: 14,
                           fontWeight: FontWeight.bold,
@@ -372,7 +437,7 @@ class _FlashcardScreenState extends State<FlashcardScreen> with SingleTickerProv
                       : null,
                   color: _currentIndex < widget.lesson.flashcards.length - 1 
                       ? AppColors.primary 
-                      : Colors.grey.shade300,
+                      : (isDarkMode ? Colors.grey[700] : Colors.grey.shade300),
                   iconSize: 28,
                 ),
               ],
@@ -385,6 +450,8 @@ class _FlashcardScreenState extends State<FlashcardScreen> with SingleTickerProv
 
   Widget _buildCardContent() {
     final currentFlashcard = widget.lesson.flashcards[_currentIndex];
+    final userProvider = Provider.of<UserProvider>(context, listen: false);
+    final isDarkMode = Theme.of(context).brightness == Brightness.dark;
     
     return AnimatedSwitcher(
       duration: const Duration(milliseconds: 300),
@@ -396,7 +463,7 @@ class _FlashcardScreenState extends State<FlashcardScreen> with SingleTickerProv
           fontWeight: FontWeight.bold,
           color: _showFront 
               ? AppColors.primary 
-              : Colors.black87,
+              : (isDarkMode ? Colors.white : Colors.black87),
         ),
         textAlign: TextAlign.center,
       ),
