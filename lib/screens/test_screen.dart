@@ -1,10 +1,8 @@
-// lib/screens/test_screen.dart
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 import '../l10n/app_localizations.dart';
 import '../constants/app_colors.dart';
 import '../providers/quiz_provider.dart';
-import '../providers/user_provider.dart';
 import '../models/quiz_model.dart';
 import 'quiz_screen.dart';
 
@@ -21,7 +19,6 @@ class _TestScreenState extends State<TestScreen> {
   @override
   void initState() {
     super.initState();
-    // Initialize in post-frame callback
     WidgetsBinding.instance.addPostFrameCallback((_) {
       if (!_initialized) {
         _initialized = true;
@@ -32,7 +29,7 @@ class _TestScreenState extends State<TestScreen> {
 
   @override
   Widget build(BuildContext context) {
-    final l10n = AppLocalizations.of(context);
+    final l10n = AppLocalizations.of(context)!;
     
     return Consumer<QuizProvider>(
       builder: (context, quizProvider, child) {
@@ -104,7 +101,6 @@ class _TestScreenState extends State<TestScreen> {
       }
     }
 
-    // Get localized quiz title and description
     final localizedTitle = _getLocalizedQuizTitle(quiz.id, l10n);
     final localizedDescription = _getLocalizedQuizDescription(quiz.id, l10n);
 
@@ -147,7 +143,7 @@ class _TestScreenState extends State<TestScreen> {
                       vertical: 4,
                     ),
                     decoration: BoxDecoration(
-                      color: statusColor.withOpacity(0.1),
+                      color: statusColor.withValues(alpha: 0.1),
                       borderRadius: BorderRadius.circular(8),
                     ),
                     child: Text(
@@ -175,7 +171,7 @@ class _TestScreenState extends State<TestScreen> {
                   Container(
                     padding: const EdgeInsets.all(8),
                     decoration: BoxDecoration(
-                      color: AppColors.primary.withOpacity(0.1),
+                      color: AppColors.primary.withValues(alpha: 0.1),
                       borderRadius: BorderRadius.circular(8),
                     ),
                     child: Icon(

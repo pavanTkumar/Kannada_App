@@ -1,6 +1,6 @@
-// lib/screens/flashcard_screen.dart
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
+import '../l10n/app_localizations.dart';
 import '../constants/app_colors.dart';
 import '../models/flashcard_model.dart';
 import '../providers/lesson_provider.dart';
@@ -90,18 +90,16 @@ class _FlashcardScreenState extends State<FlashcardScreen> with SingleTickerProv
     final lessonProvider = context.read<LessonProvider>();
     
     if (_isCurrentCardLearned) {
-      // Card is already marked as learned, unmark it
       lessonProvider.markFlashcardAsLearned(
         widget.lesson.id,
         _currentIndex,
-        false, // Unmark
+        false,
       );
     } else {
-      // Card is not learned, mark it as learned
       lessonProvider.markFlashcardAsLearned(
         widget.lesson.id,
         _currentIndex,
-        true, // Mark as learned
+        true,
       );
     }
     
@@ -111,27 +109,29 @@ class _FlashcardScreenState extends State<FlashcardScreen> with SingleTickerProv
   }
   
   void _showInfoDialog() {
+    final l10n = AppLocalizations.of(context)!;
+    
     showDialog(
       context: context,
       builder: (context) => AlertDialog(
-        title: const Text('How to Use Flashcards'),
+        title: Text(l10n.howToUseFlashcards),
         content: Column(
           mainAxisSize: MainAxisSize.min,
           crossAxisAlignment: CrossAxisAlignment.start,
-          children: const [
+          children: [
             ListTile(
-              leading: Icon(Icons.touch_app),
-              title: Text('Tap card to flip'),
+              leading: const Icon(Icons.touch_app),
+              title: Text(l10n.tapCardToFlipInfo),
               contentPadding: EdgeInsets.zero,
             ),
             ListTile(
-              leading: Icon(Icons.check_circle),
-              title: Text('Mark cards as learned'),
+              leading: const Icon(Icons.check_circle),
+              title: Text(l10n.markCardsAsLearned),
               contentPadding: EdgeInsets.zero,
             ),
             ListTile(
-              leading: Icon(Icons.repeat),
-              title: Text('Practice regularly'),
+              leading: const Icon(Icons.repeat),
+              title: Text(l10n.practiceRegularly),
               contentPadding: EdgeInsets.zero,
             ),
           ],
@@ -139,7 +139,7 @@ class _FlashcardScreenState extends State<FlashcardScreen> with SingleTickerProv
         actions: [
           TextButton(
             onPressed: () => Navigator.pop(context),
-            child: const Text('Got it'),
+            child: Text(l10n.gotIt),
           ),
         ],
       ),
@@ -148,6 +148,7 @@ class _FlashcardScreenState extends State<FlashcardScreen> with SingleTickerProv
 
   @override
   Widget build(BuildContext context) {
+    final l10n = AppLocalizations.of(context)!;
     final currentFlashcard = widget.lesson.flashcards[_currentIndex];
     
     return Scaffold(
@@ -156,15 +157,12 @@ class _FlashcardScreenState extends State<FlashcardScreen> with SingleTickerProv
         actions: [
           IconButton(
             icon: const Icon(Icons.info_outline),
-            onPressed: () {
-              _showInfoDialog();
-            },
+            onPressed: _showInfoDialog,
           ),
         ],
       ),
       body: Column(
         children: [
-          // Progress indicator
           Container(
             padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 12),
             color: Colors.grey.shade50,
@@ -174,7 +172,7 @@ class _FlashcardScreenState extends State<FlashcardScreen> with SingleTickerProv
                   mainAxisAlignment: MainAxisAlignment.spaceBetween,
                   children: [
                     Text(
-                      'Card ${_currentIndex + 1} of ${widget.lesson.flashcards.length}',
+                      l10n.cardOf(_currentIndex + 1, widget.lesson.flashcards.length),
                       style: const TextStyle(
                         fontSize: 14,
                         color: Colors.grey,
@@ -189,7 +187,7 @@ class _FlashcardScreenState extends State<FlashcardScreen> with SingleTickerProv
                         ),
                         const SizedBox(width: 4),
                         Text(
-                          '${widget.lesson.flashcards.where((f) => f.isLearned).length} learned',
+                          '${widget.lesson.flashcards.where((f) => f.isLearned).length} ${l10n.learned}',
                           style: const TextStyle(
                             fontSize: 14,
                             color: Colors.grey,
@@ -211,7 +209,6 @@ class _FlashcardScreenState extends State<FlashcardScreen> with SingleTickerProv
             ),
           ),
           
-          // Flashcard content
           Expanded(
             child: GestureDetector(
               onTap: _flipCard,
@@ -247,7 +244,7 @@ class _FlashcardScreenState extends State<FlashcardScreen> with SingleTickerProv
                                 Colors.white,
                                 currentFlashcard.isLearned 
                                     ? Colors.green.shade50 
-                                    : AppColors.primary.withOpacity(0.05),
+                                    : AppColors.primary.withValues(alpha: 0.05),
                               ],
                             ),
                           ),
@@ -264,18 +261,18 @@ class _FlashcardScreenState extends State<FlashcardScreen> with SingleTickerProv
                                       color: Colors.green.shade300,
                                     ),
                                   ),
-                                  child: const Row(
+                                  child: Row(
                                     mainAxisSize: MainAxisSize.min,
                                     children: [
-                                      Icon(
+                                      const Icon(
                                         Icons.check_circle,
                                         size: 16,
                                         color: Colors.green,
                                       ),
-                                      SizedBox(width: 4),
+                                      const SizedBox(width: 4),
                                       Text(
-                                        'Learned',
-                                        style: TextStyle(
+                                        l10n.learned,
+                                        style: const TextStyle(
                                           fontSize: 12,
                                           color: Colors.green,
                                           fontWeight: FontWeight.bold,
@@ -286,7 +283,7 @@ class _FlashcardScreenState extends State<FlashcardScreen> with SingleTickerProv
                                 ),
                               const SizedBox(height: 20),
                               Text(
-                                _showFront ? 'Kannada' : 'English',
+                                _showFront ? l10n.kannada : l10n.english,
                                 style: TextStyle(
                                   fontSize: 14,
                                   color: Colors.grey.shade700,
@@ -306,27 +303,12 @@ class _FlashcardScreenState extends State<FlashcardScreen> with SingleTickerProv
                                     ),
                                   ],
                                 ),
-                                child: Transform(
-                                  alignment: Alignment.center,
-                                  transform: Matrix4.identity()
-                                    ..rotateY(_showFront ? 0 : pi),
-                                  child: Text(
-                                    _showFront ? currentFlashcard.kannada : currentFlashcard.english,
-                                    style: TextStyle(
-                                      fontSize: _showFront ? 48 : 36,
-                                      fontWeight: FontWeight.bold,
-                                      color: _showFront 
-                                          ? AppColors.primary 
-                                          : Colors.black87,
-                                    ),
-                                    textAlign: TextAlign.center,
-                                  ),
-                                ),
+                                child: _buildCardContent(),
                               ),
                               const SizedBox(height: 30),
-                              const Text(
-                                'Tap card to flip',
-                                style: TextStyle(
+                              Text(
+                                l10n.tapCardToFlip,
+                                style: const TextStyle(
                                   fontSize: 14,
                                   color: Colors.grey,
                                   fontStyle: FontStyle.italic,
@@ -343,7 +325,6 @@ class _FlashcardScreenState extends State<FlashcardScreen> with SingleTickerProv
             ),
           ),
           
-          // Control buttons
           Padding(
             padding: const EdgeInsets.all(16.0),
             child: Row(
@@ -375,7 +356,7 @@ class _FlashcardScreenState extends State<FlashcardScreen> with SingleTickerProv
                       ),
                       const SizedBox(width: 8),
                       Text(
-                        _isCurrentCardLearned ? 'Reset' : 'Mark as Learned',
+                        _isCurrentCardLearned ? AppLocalizations.of(context)!.reset : AppLocalizations.of(context)!.markAsLearned,
                         style: const TextStyle(
                           fontSize: 14,
                           fontWeight: FontWeight.bold,
@@ -398,6 +379,26 @@ class _FlashcardScreenState extends State<FlashcardScreen> with SingleTickerProv
             ),
           ),
         ],
+      ),
+    );
+  }
+
+  Widget _buildCardContent() {
+    final currentFlashcard = widget.lesson.flashcards[_currentIndex];
+    
+    return AnimatedSwitcher(
+      duration: const Duration(milliseconds: 300),
+      child: Text(
+        _showFront ? currentFlashcard.kannada : currentFlashcard.english,
+        key: ValueKey(_showFront ? 'front' : 'back'),
+        style: TextStyle(
+          fontSize: _showFront ? 48 : 36,
+          fontWeight: FontWeight.bold,
+          color: _showFront 
+              ? AppColors.primary 
+              : Colors.black87,
+        ),
+        textAlign: TextAlign.center,
       ),
     );
   }
