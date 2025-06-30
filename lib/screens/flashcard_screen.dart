@@ -168,13 +168,13 @@ class _FlashcardScreenState extends State<FlashcardScreen> with SingleTickerProv
               contentPadding: EdgeInsets.zero,
             ),
             ListTile(
-              leading: const Icon(Icons.check_circle),
-              title: Text(l10n.markCardsAsLearned),
+              leading: const Icon(Icons.volume_up),
+              title: Text("Tap the speaker icon to hear pronunciation"),
               contentPadding: EdgeInsets.zero,
             ),
             ListTile(
-              leading: const Icon(Icons.volume_up),
-              title: Text("Tap the speaker icon to hear pronunciation"),
+              leading: const Icon(Icons.check_circle),
+              title: Text(l10n.markCardsAsLearned),
               contentPadding: EdgeInsets.zero,
             ),
             ListTile(
@@ -452,11 +452,14 @@ class _FlashcardScreenState extends State<FlashcardScreen> with SingleTickerProv
     final currentFlashcard = widget.lesson.flashcards[_currentIndex];
     final userProvider = Provider.of<UserProvider>(context, listen: false);
     final isDarkMode = Theme.of(context).brightness == Brightness.dark;
+    final languageCode = userProvider.currentLocale.languageCode;
     
     return AnimatedSwitcher(
       duration: const Duration(milliseconds: 300),
       child: Text(
-        _showFront ? currentFlashcard.kannada : currentFlashcard.english,
+        _showFront 
+            ? currentFlashcard.kannada 
+            : currentFlashcard.getTranslation(languageCode),
         key: ValueKey(_showFront ? 'front' : 'back'),
         style: TextStyle(
           fontSize: _showFront ? 48 : 36,

@@ -2,11 +2,13 @@
 class Flashcard {
   final String kannada;
   final String english;
+  final Map<String, String> translations;
   bool isLearned;
 
   Flashcard({
     required this.kannada,
     required this.english,
+    this.translations = const {},
     this.isLearned = false,
   });
 
@@ -14,6 +16,9 @@ class Flashcard {
     return Flashcard(
       kannada: map['kannada'] as String,
       english: map['english'] as String,
+      translations: map['translations'] != null 
+          ? Map<String, String>.from(map['translations'] as Map)
+          : {'en': map['english'] as String},
       isLearned: map['isLearned'] as bool? ?? false,
     );
   }
@@ -22,8 +27,18 @@ class Flashcard {
     return {
       'kannada': kannada,
       'english': english,
+      'translations': translations,
       'isLearned': isLearned,
     };
+  }
+  
+  // Get translation based on language code
+  String getTranslation(String languageCode) {
+    // If language is English or translation not available, return English
+    if (languageCode == 'en' || !translations.containsKey(languageCode)) {
+      return english;
+    }
+    return translations[languageCode]!;
   }
 }
 

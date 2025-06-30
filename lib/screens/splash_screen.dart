@@ -1,9 +1,10 @@
 // lib/screens/splash_screen.dart
 import 'package:flutter/material.dart';
+import 'package:provider/provider.dart';
+import '../l10n/app_localizations.dart';
 import '../constants/app_colors.dart';
 import 'main_screen.dart';
 import 'setup_screen.dart';
-import 'package:provider/provider.dart';
 import '../providers/user_provider.dart';
 
 class SplashScreen extends StatefulWidget {
@@ -18,6 +19,7 @@ class _SplashScreenState extends State<SplashScreen> with SingleTickerProviderSt
   late Animation<double> _fadeInAnimation;
   late Animation<Offset> _slideAnimation;
   late Animation<double> _scaleAnimation;
+  late Animation<double> _heartbeatAnimation;
 
   @override
   void initState() {
@@ -50,14 +52,32 @@ class _SplashScreenState extends State<SplashScreen> with SingleTickerProviderSt
       parent: _controller,
       curve: const Interval(0.3, 0.8, curve: Curves.easeOut),
     ));
+    
+    // Heartbeat animation for the heart emoji
+    _heartbeatAnimation = TweenSequence<double>([
+      TweenSequenceItem(
+        tween: Tween<double>(begin: 1.0, end: 1.2)
+            .chain(CurveTween(curve: Curves.easeInOut)),
+        weight: 1,
+      ),
+      TweenSequenceItem(
+        tween: Tween<double>(begin: 1.2, end: 1.0)
+            .chain(CurveTween(curve: Curves.easeInOut)),
+        weight: 1,
+      ),
+    ]).animate(CurvedAnimation(
+      parent: _controller,
+      curve: const Interval(0.6, 1.0, curve: Curves.linear),
+    ));
 
     _controller.forward().then((_) {
+      _controller.repeat(min: 0.6, max: 1.0); // Repeat only the heartbeat part
       _navigateToNextScreen();
     });
   }
 
   void _navigateToNextScreen() async {
-    await Future.delayed(const Duration(milliseconds: 800));
+    await Future.delayed(const Duration(milliseconds: 1200));
     if (!mounted) return;
     
     final userProvider = Provider.of<UserProvider>(context, listen: false);
@@ -82,94 +102,142 @@ class _SplashScreenState extends State<SplashScreen> with SingleTickerProviderSt
 
   @override
   Widget build(BuildContext context) {
+    final isDarkMode = Theme.of(context).brightness == Brightness.dark;
+    
     return Scaffold(
-      backgroundColor: AppColors.primary,
+      backgroundColor: isDarkMode ? Colors.grey[900] : AppColors.primary,
       body: SafeArea(
-        child: Center(
-          child: ScaleTransition(
-            scale: _scaleAnimation,
-            child: SlideTransition(
-              position: _slideAnimation,
-              child: FadeTransition(
-                opacity: _fadeInAnimation,
-                child: Column(
-                  mainAxisAlignment: MainAxisAlignment.center,
-                  children: [
-                    // App icon with shadow
-                    Container(
-                      width: 120,
-                      height: 120,
-                      decoration: BoxDecoration(
-                        color: Colors.white,
-                        borderRadius: BorderRadius.circular(28),
-                        boxShadow: [
-                          BoxShadow(
-                            color: Colors.black.withOpacity(0.2),
-                            spreadRadius: 2,
-                            blurRadius: 10,
-                            offset: const Offset(0, 4),
-                          ),
-                        ],
-                      ),
-                      child: Center(
-                        child: Text(
-                          "ಕ",
-                          style: TextStyle(
-                            fontSize: 80,
-                            fontWeight: FontWeight.bold,
-                            color: AppColors.primary,
-                          ),
-                        ),
-                      ),
-                    ),
-                    const SizedBox(height: 40),
-                    const Text(
-                      'Learn',
-                      style: TextStyle(
-                        color: Colors.white,
-                        fontSize: 42,
-                        fontWeight: FontWeight.bold,
-                      ),
-                    ),
-                    Row(
-                      mainAxisAlignment: MainAxisAlignment.center,
-                      children: [
-                        const Text(
-                          'Kannada',
-                          style: TextStyle(
-                            color: Colors.white,
-                            fontSize: 42,
-                            fontWeight: FontWeight.bold,
-                          ),
-                        ),
-                        Container(
-                          margin: const EdgeInsets.only(left: 12),
-                          padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 8),
-                          decoration: BoxDecoration(
-                            border: Border.all(color: Colors.white, width: 2),
-                            borderRadius: BorderRadius.circular(8),
-                          ),
-                          child: const Text(
-                            'ಕನ್ನಡ ಕಲಿ',
-                            style: TextStyle(
+        child: Column(
+          children: [
+            Expanded(
+              child: Center(
+                child: ScaleTransition(
+                  scale: _scaleAnimation,
+                  child: SlideTransition(
+                    position: _slideAnimation,
+                    child: FadeTransition(
+                      opacity: _fadeInAnimation,
+                      child: Column(
+                        mainAxisAlignment: MainAxisAlignment.center,
+                        children: [
+                          // App icon with shadow
+                          Container(
+                            width: 120,
+                            height: 120,
+                            decoration: BoxDecoration(
                               color: Colors.white,
-                              fontSize: 22,
+                              borderRadius: BorderRadius.circular(28),
+                              boxShadow: [
+                                BoxShadow(
+                                  color: Colors.black.withValues(alpha: 30),
+                                  spreadRadius: 1,
+                                  blurRadius: 6,
+                                  offset: const Offset(0, 3),
+                                ),
+                              ],
+                            ),
+                            child: Center(
+                              child: Text(
+                                "ಕ",
+                                style: TextStyle(
+                                  fontSize: 80,
+                                  fontWeight: FontWeight.bold,
+                                  color: AppColors.primary,
+                                ),
+                              ),
+                            ),
+                          ),
+                          const SizedBox(height: 40),
+                          Text(
+                            'Learn',
+                            style: TextStyle(
+                              color: isDarkMode ? Colors.white : Colors.white,
+                              fontSize: 42,
                               fontWeight: FontWeight.bold,
                             ),
                           ),
-                        ),
-                      ],
+                          Row(
+                            mainAxisAlignment: MainAxisAlignment.center,
+                            children: [
+                              Text(
+                                'Kannada',
+                                style: TextStyle(
+                                  color: isDarkMode ? Colors.white : Colors.white,
+                                  fontSize: 42,
+                                  fontWeight: FontWeight.bold,
+                                ),
+                              ),
+                              Container(
+                                margin: const EdgeInsets.only(left: 12),
+                                padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 8),
+                                decoration: BoxDecoration(
+                                  border: Border.all(color: Colors.white, width: 2),
+                                  borderRadius: BorderRadius.circular(8),
+                                ),
+                                child: Text(
+                                  'ಕನ್ನಡ ಕಲಿ',
+                                  style: TextStyle(
+                                    color: isDarkMode ? Colors.white : Colors.white,
+                                    fontSize: 22,
+                                    fontWeight: FontWeight.bold,
+                                  ),
+                                ),
+                              ),
+                            ],
+                          ),
+                          const SizedBox(height: 40),
+                          CircularProgressIndicator(
+                            valueColor: AlwaysStoppedAnimation<Color>(
+                              isDarkMode ? AppColors.primary : Colors.white
+                            ),
+                            strokeWidth: 3,
+                          ),
+                        ],
+                      ),
                     ),
-                    const SizedBox(height: 40),
-                    const CircularProgressIndicator(
-                      valueColor: AlwaysStoppedAnimation<Color>(Colors.white),
-                      strokeWidth: 3,
+                  ),
+                ),
+              ),
+            ),
+            // "Made with love in India" text with animated heart
+            Padding(
+              padding: const EdgeInsets.only(bottom: 24.0),
+              child: FadeTransition(
+                opacity: _fadeInAnimation,
+                child: Row(
+                  mainAxisAlignment: MainAxisAlignment.center,
+                  children: [
+                    Text(
+                      'Made with ',
+                      style: TextStyle(
+                        color: isDarkMode ? Colors.grey[300] : Colors.white,
+                        fontSize: 14,
+                      ),
+                    ),
+                    AnimatedBuilder(
+                      animation: _heartbeatAnimation,
+                      builder: (context, child) {
+                        return Transform.scale(
+                          scale: _heartbeatAnimation.value,
+                          child: const Text(
+                            '❤️',
+                            style: TextStyle(fontSize: 16),
+                          ),
+                        );
+                      },
+                    ),
+                    Text(
+                      ' in India',
+                      style: TextStyle(
+                        color: isDarkMode ? Colors.grey[300] : Colors.white,
+                        fontSize: 14,
+                      ),
                     ),
                   ],
                 ),
               ),
             ),
-          ),
+          ],
         ),
       ),
     );

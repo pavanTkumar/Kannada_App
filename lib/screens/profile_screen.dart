@@ -213,7 +213,40 @@ class ProfileScreen extends StatelessWidget {
                           ListTile(
                             leading: const Icon(Icons.info_outline),
                             title: Text(l10n.version),
-                            subtitle: const Text('1.0.0'),
+                            subtitle: GestureDetector(
+                              onTap: () {
+                                // Simple Easter Egg implementation without dialog
+                                final scaffold = ScaffoldMessenger.of(context);
+                                scaffold.clearSnackBars();
+                                scaffold.showSnackBar(
+                                  SnackBar(
+                                    content: const Row(
+                                      children: [
+                                        Icon(Icons.celebration, color: Colors.yellow),
+                                        SizedBox(width: 8),
+                                        Expanded(
+                                          child: Text(
+                                            'Developed by Pavan Tejavath',
+                                            style: TextStyle(color: Colors.white),
+                                          ),
+                                        ),
+                                        Icon(Icons.celebration, color: Colors.yellow),
+                                      ],
+                                    ),
+                                    backgroundColor: AppColors.primary,
+                                    duration: Duration(seconds: 3),
+                                    behavior: SnackBarBehavior.floating,
+                                    shape: RoundedRectangleBorder(
+                                      borderRadius: BorderRadius.circular(8),
+                                    ),
+                                  ),
+                                );
+                              },
+                              child: const Padding(
+                                padding: EdgeInsets.symmetric(vertical: 4.0),
+                                child: Text('1.0.0'),
+                              ),
+                            ),
                           ),
                         ],
                       ),
@@ -325,29 +358,33 @@ class ProfileScreen extends StatelessWidget {
                       color: isDarkMode ? Colors.grey[400] : Colors.grey[600],
                     ),
                   ) : null,
-                  onTap: () async {
-                    await userProvider.updateLanguage(language);
-                    if (context.mounted) {
-                      Navigator.pop(context);
-                      
-                      // Show success message
-                      ScaffoldMessenger.of(context).showSnackBar(
-                        SnackBar(
-                          content: Text(
-                            "${l10n.preferredLanguage} ${l10n.language.toLowerCase()} updated!",
+                  onTap: () {
+                    // Close the bottom sheet first
+                    Navigator.pop(context);
+                    
+                    // Then update language - this prevents blank screen issues
+                    Future.microtask(() async {
+                      await userProvider.updateLanguage(language);
+                      if (context.mounted) {
+                        // Show success message
+                        ScaffoldMessenger.of(context).showSnackBar(
+                          SnackBar(
+                            content: Text(
+                              "${l10n.preferredLanguage} ${l10n.language.toLowerCase()} updated!",
+                            ),
+                            backgroundColor: AppColors.primary,
+                            behavior: SnackBarBehavior.floating,
+                            shape: RoundedRectangleBorder(
+                              borderRadius: BorderRadius.circular(8),
+                            ),
                           ),
-                          backgroundColor: AppColors.primary,
-                          behavior: SnackBarBehavior.floating,
-                          shape: RoundedRectangleBorder(
-                            borderRadius: BorderRadius.circular(8),
-                          ),
-                        ),
-                      );
-                    }
+                        );
+                      }
+                    });
                   },
                 ),
               );
-            }),
+            }).toList(),
             
             const SizedBox(height: 16),
             

@@ -1,3 +1,4 @@
+// lib/screens/progress_screen.dart
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 import '../l10n/app_localizations.dart';
@@ -10,11 +11,12 @@ class ProgressScreen extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final l10n = AppLocalizations.of(context)!;
+    final isDarkMode = Theme.of(context).brightness == Brightness.dark;
     
     return Consumer<LessonProvider>(
       builder: (context, lessonProvider, child) {
         return Scaffold(
-          backgroundColor: Colors.white,
+          backgroundColor: Theme.of(context).scaffoldBackgroundColor,
           body: SafeArea(
             child: Padding(
               padding: const EdgeInsets.all(16.0),
@@ -30,14 +32,24 @@ class ProgressScreen extends StatelessWidget {
                   ),
                   const SizedBox(height: 20),
                   Expanded(
-                    child: ListView.builder(
-                      itemCount: lessonProvider.lessons.length,
-                      itemBuilder: (context, index) {
-                        final lesson = lessonProvider.lessons.values.elementAt(index);
-                        final localizedTitle = _getLocalizedLessonTitle(lesson.id, l10n);
-                        return _buildProgressCard(localizedTitle, lesson.progress, l10n);
-                      },
-                    ),
+                    child: lessonProvider.isLoading
+                      ? const Center(child: CircularProgressIndicator())
+                      : lessonProvider.lessons.isEmpty
+                        ? _buildEmptyProgress(isDarkMode)
+                        : ListView.builder(
+                            itemCount: lessonProvider.lessons.length,
+                            itemBuilder: (context, index) {
+                              final lesson = lessonProvider.lessons.values.elementAt(index);
+                              final localizedTitle = _getLocalizedLessonTitle(lesson.id, l10n);
+                              return _buildProgressCard(
+                                context,
+                                localizedTitle, 
+                                lesson.progress, 
+                                l10n,
+                                isDarkMode,
+                              );
+                            },
+                          ),
                   ),
                 ],
               ),
@@ -45,6 +57,38 @@ class ProgressScreen extends StatelessWidget {
           ),
         );
       },
+    );
+  }
+
+  Widget _buildEmptyProgress(bool isDarkMode) {
+    return Center(
+      child: Column(
+        mainAxisAlignment: MainAxisAlignment.center,
+        children: [
+          Icon(
+            Icons.bar_chart,
+            size: 80,
+            color: isDarkMode ? Colors.grey[700] : Colors.grey[300],
+          ),
+          const SizedBox(height: 16),
+          Text(
+            'No progress data available yet',
+            style: TextStyle(
+              fontSize: 18,
+              fontWeight: FontWeight.bold,
+              color: isDarkMode ? Colors.grey[400] : Colors.grey[600],
+            ),
+          ),
+          const SizedBox(height: 8),
+          Text(
+            'Start learning to see your progress here',
+            style: TextStyle(
+              fontSize: 14,
+              color: isDarkMode ? Colors.grey[500] : Colors.grey[600],
+            ),
+          ),
+        ],
+      ),
     );
   }
 
@@ -67,9 +111,19 @@ class ProgressScreen extends StatelessWidget {
     }
   }
 
-  Widget _buildProgressCard(String title, double progress, AppLocalizations l10n) {
+  Widget _buildProgressCard(
+    BuildContext context, 
+    String title, 
+    double progress, 
+    AppLocalizations l10n,
+    bool isDarkMode,
+  ) {
     return Card(
       margin: const EdgeInsets.only(bottom: 16),
+      elevation: 2,
+      shape: RoundedRectangleBorder(
+        borderRadius: BorderRadius.circular(12),
+      ),
       child: Padding(
         padding: const EdgeInsets.all(16),
         child: Column(
@@ -78,28 +132,51 @@ class ProgressScreen extends StatelessWidget {
             Row(
               mainAxisAlignment: MainAxisAlignment.spaceBetween,
               children: [
-                Text(
-                  title,
-                  style: const TextStyle(
-                    fontSize: 18,
-                    fontWeight: FontWeight.bold,
+                Expanded(
+                  child: Text(
+                    title,
+                    style: const TextStyle(
+                      fontSize: 18,
+                      fontWeight: FontWeight.bold,
+                    ),
                   ),
                 ),
-                Text(
-                  '${progress.toInt()}%',
-                  style: TextStyle(
-                    fontSize: 18,
-                    fontWeight: FontWeight.bold,
-                    color: _getProgressColor(progress),
+                Container(
+                  padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 6),
+                  decoration: BoxDecoration(
+                    color: _getProgressColor(progress).withValues(alpha: isDarkMode ? 40 : 26),
+                    borderRadius: BorderRadius.circular(16),
+                  ),
+                  child: Text(
+                    '${progress.toInt()}%',
+                    style: TextStyle(
+                      fontSize: 16,
+                      fontWeight: FontWeight.bold,
+                      color: _getProgressColor(progress),
+                    ),
                   ),
                 ),
               ],
             ),
+            const SizedBox(height: 16),
+            ClipRRect(
+              borderRadius: BorderRadius.circular(4),
+              child: LinearProgressIndicator(
+                value: progress / 100,
+                backgroundColor: isDarkMode ? Colors.grey[800] : Colors.grey[200],
+                valueColor: AlwaysStoppedAnimation<Color>(_getProgressColor(progress)),
+                minHeight: 8,
+              ),
+            ),
             const SizedBox(height: 8),
-            LinearProgressIndicator(
-              value: progress / 100,
-              backgroundColor: Colors.grey[200],
-              valueColor: AlwaysStoppedAnimation<Color>(_getProgressColor(progress)),
+            Text(
+              progress > 0 
+                ? '${progress.toInt()}% ${l10n.complete}' 
+                : l10n.notStarted,
+              style: TextStyle(
+                fontSize: 12,
+                color: isDarkMode ? Colors.grey[400] : Colors.grey[600],
+              ),
             ),
           ],
         ),
